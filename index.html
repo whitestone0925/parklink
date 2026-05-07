@@ -46,14 +46,128 @@ button,input,select,textarea{font-family:inherit;}
 /* MAIN */
 .main{max-width:900px;margin:0 auto;padding:22px 18px;}
 
-/* HERO */
-.hero{background:var(--a);border-radius:var(--rl);padding:26px 30px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden;}
-.hero::after{content:'P';position:absolute;right:-8px;top:-28px;font-size:150px;font-weight:900;color:rgba(255,255,255,.06);line-height:1;pointer-events:none;}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;margin-bottom:10px;}
-.hero-title{font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:4px;}
-.hero-sub{font-size:13px;opacity:.7;}
+/* HERO IMAGE (trivago style) */
+.hero-img-wrap{
+  position:relative;
+  width:100%;
+  min-height:420px;
+  background-image:url('https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=1400&q=80');
+  background-size:cover;
+  background-position:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:0;
+}
+.hero-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg, rgba(10,30,15,.72) 0%, rgba(20,60,35,.60) 60%, rgba(0,0,0,.45) 100%);
+}
+.hero-img-content{
+  position:relative;z-index:1;
+  width:100%;max-width:780px;
+  padding:48px 24px 52px;
+  text-align:center;
+}
+.hero-img-title{
+  font-size:clamp(26px,5vw,42px);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-1px;
+  margin-bottom:10px;
+  line-height:1.3;
+  text-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.hero-img-sub{
+  font-size:14px;
+  color:rgba(255,255,255,.8);
+  margin-bottom:28px;
+  font-weight:400;
+}
+.hero-search-box{
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:20px;
+  padding:14px 16px;
+  max-width:660px;
+  margin:0 auto;
+}
+.hero-search-inner{
+  display:flex;
+  align-items:center;
+  background:#fff;
+  border-radius:14px;
+  padding:6px 6px 6px 16px;
+  gap:8px;
+  box-shadow:0 4px 24px rgba(0,0,0,.15);
+  margin-bottom:12px;
+}
+.hero-search-icon{font-size:18px;flex-shrink:0;}
+.hero-search-input{
+  flex:1;
+  border:none;
+  outline:none;
+  font-size:15px;
+  background:transparent;
+  color:var(--t);
+  min-width:0;
+}
+.hero-search-input::placeholder{color:var(--t3);font-size:13px;}
+.hero-search-btn{
+  flex-shrink:0;
+  background:var(--a);
+  border:none;
+  border-radius:10px;
+  padding:10px 20px;
+  color:#fff;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s;
+  white-space:nowrap;
+}
+.hero-search-btn:hover{background:var(--a2);}
+.hero-search-btn.loading{opacity:.7;}
+.hero-search-sub{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.hero-loc-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 14px;
+  border-radius:20px;
+  border:1.5px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+  backdrop-filter:blur(8px);
+}
+.hero-loc-btn:hover,.hero-loc-btn.on{
+  background:rgba(255,255,255,.25);
+  border-color:#fff;
+}
 
-/* FILTER CARD */
+/* RESULTS SECTION */
+.results-wrap{max-width:900px;margin:0 auto;padding:20px 18px;}
+
+/* HERO (旧スタイル削除) */
+.hero{display:none;}
+
+/* AI検索タグ（ヒーロー内） */
+.hero-img-wrap .ai-applied-tag{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4);}
+.hero-img-wrap .ai-applied-tag button{color:rgba(255,255,255,.7);}
+
+
+
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;margin-bottom:14px;color:#fff;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);}
 .fc{background:var(--w);border-radius:var(--rl);padding:18px;margin-bottom:14px;border:1px solid var(--b);box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .fl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
 .divider{height:1px;background:var(--b);margin:14px 0;}
@@ -306,47 +420,42 @@ button,input,select,textarea{font-family:inherit;}
   </div>
   <div class="main">
     <div id="list_view">
-      <div class="hero">
-        <div class="hero-badge"><span style="width:6px;height:6px;border-radius:50%;background:#7ee8a2;display:inline-block"></span><span id="hero_count"></span></div>
-        <div class="hero-title">月極駐車場を探す</div>
-        <div class="hero-sub">車のサイズ・現在地・予算から最適な駐車場を</div>
-      </div>
-      <div class="fc">
-        <div class="fl">🚗 車のサイズ</div>
-        <div class="size-row" id="size_row"></div>
-        <div id="size_hint" style="font-size:11px;color:var(--a);margin-top:7px;display:none"></div>
-        <div class="divider"></div>
-        <div class="fl">🔍 キーワード検索</div>
-        <div class="ai-search-wrap">
-          <span class="ai-search-icon">✨</span>
-          <input class="ai-search-input" id="q"
-            placeholder="例：神保町で3万以下の平置き、ワンボックスOKな屋根付き..."
-            onkeydown="if(event.key==='Enter')applyAiSearch()"
-            oninput="onSearchInput(this.value)">
-          <button class="ai-search-btn" id="ai_search_btn" onclick="applyAiSearch()">AI検索</button>
-        </div>
-        <div class="ai-applied-tags" id="ai_applied_tags"></div>
-        <div class="ai-search-hint" id="ai_search_hint">🔍 キーワード入力で絞り込み、または文章でAI検索できます</div>
-        <div class="divider"></div>
-        <div class="fl">📍 エリア・距離</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-          <button class="loc-btn" id="loc_btn" onclick="handleLocate()">📍 現在地から探す</button>
-          <button class="btn-ghost" id="loc_reset" style="font-size:11px;display:none" onclick="resetLoc()">✕ 現在地をリセット</button>
-        </div>
-        <div class="ward-row" id="ward_row"></div>
-        <div class="divider"></div>
-        <div class="frow">
-          <label class="fcheck"><input type="checkbox" id="avail_chk" onchange="onFilter()"> 空きあり物件のみ</label>
-          <div class="pricewrap">予算上限 <input type="number" class="price-in" id="max_price" placeholder="30000" oninput="onFilter()"> 円/月</div>
-          <div class="rcnt" id="rcnt"></div>
+      <!-- HERO IMAGE -->
+      <div class="hero-img-wrap">
+        <div class="hero-img-overlay"></div>
+        <div class="hero-img-content">
+          <div class="hero-badge"><span style="width:6px;height:6px;border-radius:50%;background:#7ee8a2;display:inline-block"></span><span id="hero_count"></span></div>
+          <h1 class="hero-img-title">月極駐車場を、<br>もっとかんたんに。</h1>
+          <p class="hero-img-sub">東京都内6,900件以上の月極駐車場から探せます</p>
+          <!-- 検索バー -->
+          <div class="hero-search-box">
+            <div class="hero-search-inner">
+              <span class="hero-search-icon">🔍</span>
+              <input class="hero-search-input" id="q"
+                placeholder="エリア・駅名・地名で検索（例：新宿、じんぼうちょう）"
+                onkeydown="if(event.key==='Enter')applyAiSearch()"
+                oninput="onSearchInput(this.value)">
+              <button class="hero-search-btn" id="ai_search_btn" onclick="applyAiSearch()">
+                <span>✨ AI検索</span>
+              </button>
+            </div>
+            <div class="hero-search-sub">
+              <button class="hero-loc-btn" id="loc_btn" onclick="handleLocate()">📍 現在地から探す</button>
+              <button class="btn-ghost" id="loc_reset" style="font-size:11px;display:none;color:#fff;border-color:rgba(255,255,255,.4)" onclick="resetLoc()">✕ リセット</button>
+              <div class="ai-applied-tags" id="ai_applied_tags" style="display:inline-flex"></div>
+              <div class="rcnt" id="rcnt" style="margin-left:auto;color:rgba(255,255,255,.8)"></div>
+            </div>
+          </div>
         </div>
       </div>
+      <div class="results-wrap">
       <div class="ai-wrap" id="ai_wrap" style="display:none">
         <div class="ai-icon">AI</div>
         <div class="ai-text" id="ai_text"></div>
       </div>
       <div class="prop-grid" id="prop_list"></div>
       <button class="load-more" id="load_more_btn" style="display:none" onclick="loadMore()">さらに表示</button>
+      </div>
     </div>
     <div id="detail_view" style="display:none"></div>
   </div>
@@ -552,10 +661,11 @@ const WARDS = [...new Set(DATA.map(p=>p.ward).filter(Boolean))].sort();
 // ============================================================
 let state = {
   mode: 'login',
-  query: '', filterAvail: false, maxPrice: 0,
-  sizeFilter: '', ward: '', userPos: null,
+  query: '',
+  aiRanking: null,
+  userPos: null,
   selectedProp: null, inquiryProp: null,
-  limit: 50, advTimer: null,
+  limit: 50,
   chatOpen: false, chatTyping: false,
   chatMessages: [],
   adminTab: 'dash',
@@ -590,17 +700,6 @@ function go(mode) {
 // ============================================================
 function initCustomer() {
   document.getElementById('hero_count').textContent = state.properties.length.toLocaleString() + '件掲載中（東京都全域）';
-  // Ward buttons
-  const wr = document.getElementById('ward_row');
-  wr.innerHTML = '<button class="ward-btn on" onclick="setWard(this,\'\')">全区</button>' +
-    WARDS.map(w => `<button class="ward-btn" onclick="setWard(this,'${w}')">${w}</button>`).join('');
-  // Size buttons
-  const sr = document.getElementById('size_row');
-  sr.innerHTML = SIZE_ORDER.map(s =>
-    `<button class="size-btn" data-size="${s}" onclick="setSize(this,'${s}')">
-      <span>${SIZE_ICONS[s]}</span><span>${s}</span>
-    </button>`
-  ).join('');
   state.limit = 50;
   renderList();
   initChat();
@@ -616,18 +715,130 @@ function sizeOk(propSize, filterSize) {
   return pi >= fi;
 }
 
+// ひらがな→カタカナ変換
+function toKatakana(str) {
+  return str.replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
+}
+// カタカナ→ひらがな変換
+function toHiragana(str) {
+  return str.replace(/[\u30A1-\u30F6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
+}
+// よみがな辞書（主要駅・地名）
+const YOMI_MAP = {
+  'しんじゅく':'新宿','しぶや':'渋谷','いけぶくろ':'池袋','あきはばら':'秋葉原',
+  'かんだ':'神田','じんぼうちょう':'神保町','くだんした':'九段下','はんぞうもん':'半蔵門',
+  'おおてまち':'大手町','とうきょう':'東京','ゆうらくちょう':'有楽町','ひびや':'日比谷',
+  'しんばし':'新橋','はまつちょう':'浜松町','たまち':'田町','しながわ':'品川',
+  'おおさき':'大崎','えびす':'恵比寿','だいかんやま':'代官山','なかめぐろ':'中目黒',
+  'じゆうがおか':'自由が丘','みとう':'三軒茶屋','ふたこたまがわ':'二子玉川',
+  'きたさんじゅ':'北参道','はらじゅく':'原宿','おもてさんどう':'表参道','あおやま':'青山',
+  'あかさか':'赤坂','とらのもん':'虎ノ門','かみやちょう':'神谷町','ろっぽんぎ':'六本木',
+  'あざぶじゅうばん':'麻布十番','たまち':'田町','みなとみらい':'みなとみらい',
+  'うえの':'上野','おかちまち':'御徒町','あさくさ':'浅草','かっぱばし':'合羽橋',
+  'きょうしまち':'錦糸町','きんしちょう':'錦糸町','すみだ':'墨田','こうとう':'江東',
+  'もんぜんなかちょう':'門前仲町','きばちょう':'木場','つきしま':'月島',
+  'ちよだく':'千代田区','ちゅうおうく':'中央区','みなとく':'港区',
+  'しんじゅくく':'新宿区','しぶやく':'渋谷区','めぐろく':'目黒区',
+  'おおたく':'大田区','せたがやく':'世田谷区','ぶんきょうく':'文京区',
+  'たいとうく':'台東区','すみだく':'墨田区','こうとうく':'江東区',
+  'なかのく':'中野区','すぎなみく':'杉並区','としまく':'豊島区',
+  'きたく':'北区','あらかわく':'荒川区','いたばしく':'板橋区',
+  'ねりまく':'練馬区','あだちく':'足立区','かつしかく':'葛飾区','えどがわく':'江戸川区',
+};
+
+function normalizeQuery(str) {
+  const hira = toHiragana(str.toLowerCase());
+  // よみがな→漢字変換
+  let converted = hira;
+  for (const [yomi, kanji] of Object.entries(YOMI_MAP)) {
+    converted = converted.replace(new RegExp(yomi, 'g'), kanji);
+  }
+  return converted;
+}
+
+function tokenize(str) {
+  // 元のクエリ＋変換後クエリを両方使う
+  const normalized = normalizeQuery(str);
+  const tokens = new Set([
+    ...str.replace(/[　\s]+/g, ' ').trim().split(' ').filter(Boolean),
+    ...normalized.replace(/[　\s]+/g, ' ').trim().split(' ').filter(Boolean),
+  ]);
+  return [...tokens];
+}
+
+function matchScore(p, tokens) {
+  // 検索対象テキストをひらがな・カタカナ両方含めて生成
+  const raw = (p.name + ' ' + p.station + ' ' + p.address + ' ' + p.ward + ' ' + p.notes + ' ' + p.type + ' ' + p.size);
+  const target = raw.toLowerCase();
+  const targetHira = toHiragana(target);
+  const targetKana = toKatakana(target);
+
+  let score = 0;
+  let matched = 0;
+
+  for (const t of tokens) {
+    const tl = t.toLowerCase();
+    const tHira = toHiragana(tl);
+    const tKana = toKatakana(tl);
+
+    // 完全一致チェック（元・ひらがな・カタカナそれぞれ）
+    const exactMatch = target.includes(tl) || targetHira.includes(tHira) || targetKana.includes(tKana);
+    if (exactMatch) {
+      score += 10;
+      matched++;
+      if (p.station && (p.station.includes(t) || toHiragana(p.station).includes(tHira))) score += 5;
+      if (p.ward && (p.ward.includes(t) || toHiragana(p.ward).includes(tHira))) score += 3;
+      continue;
+    }
+
+    // あいまい一致：トークンの先頭70%が含まれていればヒット
+    if (tl.length >= 2) {
+      const len = Math.ceil(tl.length * 0.7);
+      const partialOrig = tl.slice(0, len);
+      const partialHira = tHira.slice(0, len);
+      const partialKana = tKana.slice(0, len);
+
+      const fuzzyMatch =
+        target.includes(partialOrig) ||
+        targetHira.includes(partialHira) ||
+        targetKana.includes(partialKana);
+
+      if (fuzzyMatch) {
+        score += 4;
+        matched++;
+        continue;
+      }
+    }
+
+    // 1文字ずつのN-gram部分一致（2文字以上のトークン対象）
+    if (tHira.length >= 3) {
+      let ngramHit = 0;
+      for (let i = 0; i < tHira.length - 1; i++) {
+        const bi = tHira.slice(i, i + 2);
+        if (targetHira.includes(bi)) ngramHit++;
+      }
+      const ngramRatio = ngramHit / (tHira.length - 1);
+      if (ngramRatio >= 0.6) {
+        score += Math.round(ngramRatio * 5);
+        matched++;
+      }
+    }
+  }
+
+  return matched >= Math.ceil(tokens.length * 0.5) ? score : 0;
+}
+
 function getFiltered() {
-  let f = state.properties.filter(p => {
-    if (state.filterAvail && !p.available) return false;
-    if (state.maxPrice > 0 && p.price > 0 && p.price > state.maxPrice) return false;
-    if (state.ward && p.ward !== state.ward) return false;
-    if (state.sizeFilter && !sizeOk(p.size, state.sizeFilter)) return false;
-    if (state.typeFilter && p.type !== state.typeFilter) return false;
-    if (state.featureFilter && state.featureFilter.includes('roof') && !p.roof) return false;
-    if (state.featureFilter && state.featureFilter.includes('h24') && !p.h24) return false;
-    if (state.query) return (p.name+p.station+p.address+p.ward).includes(state.query);
-    return true;
-  });
+  let f;
+  if (!state.query || state.query.trim() === '') {
+    f = [...state.properties];
+  } else {
+    const tokens = tokenize(state.query);
+    const scored = state.properties.map(p => ({ p, score: matchScore(p, tokens) }))
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+    f = scored.map(x => x.p);
+  }
   if (state.userPos) {
     f = f.map(p => ({...p, dist: calcDist(state.userPos.lat, state.userPos.lng, p.lat||0, p.lng||0)}))
          .sort((a,b)=>(a.dist||999999)-(b.dist||999999));
@@ -642,233 +853,110 @@ function calcDist(lat1,lng1,lat2,lng2) {
   return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
 }
 
-// タイマーをstateから切り出してモジュールスコープに
 let _searchTimer = null;
-let _adviceTimer = null;
-
-// AI検索の適用済みフィルター状態
-let aiFilters = { ward:'', sizeFilter:'', filterAvail:false, maxPrice:0, typeFilter:'' };
 
 function onSearchInput(val) {
-  // 入力中はクエリだけ即時反映してカウント更新
   state.query = val;
-  const f = getFiltered();
-  document.getElementById('rcnt').textContent = f.length.toLocaleString() + '件';
-  // ヒントを更新
-  const hint = document.getElementById('ai_search_hint');
-  if (val.length > 4) {
-    hint.textContent = 'Enterキーまたは「AI検索」ボタンで解析します';
-    hint.style.color = 'var(--a)';
-  } else {
-    hint.textContent = '🔍 キーワード入力で絞り込み、または文章でAI検索できます';
-    hint.style.color = 'var(--t3)';
-  }
-  // 短い入力は普通の検索として即時反映
+  document.getElementById('rcnt').textContent = getFiltered().length.toLocaleString() + '件';
   clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => {
-    state.limit = 50;
-    requestAnimationFrame(() => {
-      renderList();
-      clearTimeout(_adviceTimer);
-      _adviceTimer = setTimeout(updateAdvice, 150);
-    });
-  }, 250);
+  _searchTimer = setTimeout(() => { state.limit = 50; renderList(); updateAdvice(); }, 250);
 }
 
-// AI検索：自然言語を解析してフィルター自動適用
 function applyAiSearch() {
   const val = document.getElementById('q').value.trim();
-  if (!val) return;
-
+  if (!val) { state.query = ''; state.aiRanking = null; renderList(); updateAdvice(); return; }
   const btn = document.getElementById('ai_search_btn');
-  btn.textContent = '解析中...'; btn.classList.add('loading');
+  btn.textContent = '解析中…'; btn.classList.add('loading');
 
-  setTimeout(() => {
-    const parsed = parseSearchIntent(val);
-    applyParsedFilters(parsed, val);
-    btn.textContent = 'AI検索'; btn.classList.remove('loading');
-  }, 400);
+  setTimeout(async () => {
+    try {
+      // まずキーワード抽出＋絞り込み
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `あなたは駐車場検索AIです。ユーザーの検索クエリから検索キーワードを抽出してください。
+JSONのみを返してください（マークダウン不要）:
+{"keywords": ["キーワード1", "キーワード2"], "summary": "何を探しているかの短い説明（20字以内）"}`,
+          messages: [{ role: 'user', content: val }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content[0].text.replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(text);
+      state.query = (parsed.keywords || [val]).join(' ');
+      document.getElementById('q').value = state.query;
+      renderAppliedTags(parsed.summary || val);
+
+      // 絞り込んだ上位候補をAIにランク付けさせる
+      const candidates = getFiltered().slice(0, 30);
+      if (candidates.length > 0) {
+        await applyAiRanking(val, candidates);
+      } else {
+        state.aiRanking = null;
+      }
+    } catch(e) {
+      state.query = val;
+      state.aiRanking = null;
+      renderAppliedTags(val);
+    }
+    state.limit = 50;
+    renderList();
+    updateAdvice();
+    btn.textContent = '検索'; btn.classList.remove('loading');
+  }, 100);
 }
 
-// 自然言語を解析してフィルター値を返す
-function parseSearchIntent(text) {
-  const t = text;
-  const result = {
-    query: '', ward: '', sizeFilter: '', filterAvail: false,
-    maxPrice: 0, typeFilter: '', features: []
-  };
+async function applyAiRanking(query, candidates) {
+  try {
+    const list = candidates.map((p, i) =>
+      `${i+1}. ID:${p.id} ${p.name} ${p.station?p.station+'駅 徒歩'+p.walk+'分':''} ${p.ward} ${p.type} ${p.size} ${p.available?'空きあり':'満車'} ${p.price>0?'¥'+p.price.toLocaleString()+'/月':''} ${p.roof?'屋根あり':''} ${p.h24?'24h':''}`
+    ).join('\n');
 
-  // 区
-  const WARD_LIST = ['千代田区','中央区','港区','新宿区','渋谷区','品川区',
-    '目黒区','世田谷区','大田区','文京区','台東区','墨田区','江東区','中野区','杉並区'];
-  WARD_LIST.forEach(w => { if (t.includes(w)) result.ward = w; });
-
-  // 駅名・エリア名（キーワードとして残す）
-  const stMatch = t.match(/([^\s　、。]{2,6})(駅|周辺|近く|付近|エリア|あたり)/);
-  if (stMatch) result.query = stMatch[1];
-
-  // 予算
-  const manM = t.match(/(\d+(?:\.\d+)?)万/);
-  if (manM) result.maxPrice = Math.round(parseFloat(manM[1]) * 10000);
-  const enM = t.match(/(\d{4,6})円/);
-  if (enM && !result.maxPrice) result.maxPrice = parseInt(enM[1]);
-  const ikaM = t.match(/(\d+)万?[円]?[以下まで〜]/);
-  if (ikaM && !result.maxPrice) result.maxPrice = parseInt(ikaM[1]) * (t.slice(t.indexOf(ikaM[1])-1,t.indexOf(ikaM[1])).includes('万')||ikaM[0].includes('万') ? 10000 : 1);
-
-  // 空き
-  if (/空き|あき|空いて|使える|契約/.test(t)) result.filterAvail = true;
-
-  // サイズ
-  if (/軽/.test(t)) result.sizeFilter = '軽自動車';
-  else if (/コンパクト/.test(t)) result.sizeFilter = 'コンパクト';
-  else if (/ワンボックス|ミニバン|アルファード|ハイエース|大きい車|大型車/.test(t)) result.sizeFilter = 'ワンボックス';
-  else if (/普通車|セダン/.test(t)) result.sizeFilter = '普通車';
-
-  // タイプ
-  if (/機械式/.test(t)) result.typeFilter = '機械式';
-  else if (/平置き|平面|屋外/.test(t)) result.typeFilter = '平置き';
-  else if (/立体/.test(t)) result.typeFilter = '立体';
-
-  // 設備
-  if (/屋根|屋内|雨|濡れ/.test(t)) result.features.push('roof');
-  if (/24時間|24h|いつでも/i.test(t)) result.features.push('h24');
-
-  // 残りのキーワード（区でも駅でもない語）
-  if (!result.query && !result.ward) {
-    const clean = t.replace(/[0-9０-９万円以下まで〜空き軽コンパクト普通車ワンボックス機械式平置き屋根24h時間\s　]/g,'').slice(0,10);
-    if (clean.length > 1) result.query = clean;
-  }
-
-  return result;
-}
-
-function applyParsedFilters(parsed, originalText) {
-  // フィルターを適用
-  state.query = parsed.query;
-  state.limit = 50;
-
-  // 区フィルター
-  if (parsed.ward) {
-    state.ward = parsed.ward;
-    document.querySelectorAll('.ward-btn').forEach(b => {
-      b.classList.toggle('on', b.textContent === parsed.ward || (b.textContent === '全区' && !parsed.ward));
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `あなたは月極駐車場の検索AIです。ユーザーの検索クエリに対して、候補物件をおすすめ順にランク付けし、各物件に対してなぜおすすめかを15文字以内で日本語で説明してください。
+JSONのみを返してください（マークダウン不要）:
+{"ranking": [{"id": 物件ID, "reason": "おすすめ理由（15字以内）"}, ...]}
+上位10件のみ返してください。空きありを優先してください。`,
+        messages: [{ role: 'user', content: `検索クエリ：「${query}」\n\n候補物件：\n${list}` }]
+      })
     });
-  }
-
-  // サイズフィルター
-  if (parsed.sizeFilter) {
-    state.sizeFilter = parsed.sizeFilter;
-    document.querySelectorAll('.size-btn').forEach(b => {
-      b.classList.toggle('on', b.dataset.size === parsed.sizeFilter);
+    const data = await res.json();
+    const text = data.content[0].text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+    // IDをキーにしたマップを作成
+    state.aiRanking = {};
+    (parsed.ranking || []).forEach((r, i) => {
+      state.aiRanking[r.id] = { rank: i + 1, reason: r.reason };
     });
-    const hint = document.getElementById('size_hint');
-    hint.textContent = '※ ' + parsed.sizeFilter + '以上が入る物件を表示しています';
-    hint.style.display = '';
+  } catch(e) {
+    state.aiRanking = null;
   }
-
-  // 空きフィルター
-  if (parsed.filterAvail) {
-    state.filterAvail = true;
-    document.getElementById('avail_chk').checked = true;
-  }
-
-  // 予算フィルター
-  if (parsed.maxPrice) {
-    state.maxPrice = parsed.maxPrice;
-    document.getElementById('max_price').value = parsed.maxPrice;
-  }
-
-  // タイプフィルター（stateに追加）
-  state.typeFilter = parsed.typeFilter || '';
-
-  // 設備フィルター
-  state.featureFilter = parsed.features || [];
-
-  // タグ表示
-  renderAppliedTags(parsed, originalText);
-
-  // 再描画
-  requestAnimationFrame(() => { renderList(); updateAdvice(); });
 }
 
-function renderAppliedTags(parsed, originalText) {
-  const container = document.getElementById('ai_applied_tags');
-  const tags = [];
-  if (parsed.ward) tags.push({ label: '📍 ' + parsed.ward, key: 'ward' });
-  if (parsed.query) tags.push({ label: '🔍 ' + parsed.query, key: 'query' });
-  if (parsed.maxPrice) tags.push({ label: '💰 ' + (parsed.maxPrice/10000).toFixed(1) + '万円以下', key: 'maxPrice' });
-  if (parsed.filterAvail) tags.push({ label: '● 空きあり', key: 'filterAvail' });
-  if (parsed.sizeFilter) tags.push({ label: '🚗 ' + parsed.sizeFilter + 'まで', key: 'sizeFilter' });
-  if (parsed.typeFilter) tags.push({ label: parsed.typeFilter, key: 'typeFilter' });
-  parsed.features.forEach(f => tags.push({ label: f === 'roof' ? '屋根あり' : '24h', key: 'feat_'+f }));
-
-  if (tags.length === 0) { container.innerHTML = ''; return; }
-
-  container.innerHTML = '<span style="font-size:11px;color:var(--t2);align-self:center;margin-right:2px">AI解析:</span>' +
-    tags.map(t => `
-      <span class="ai-applied-tag">
-        ${t.label}
-        <button onclick="clearAiTag('${t.key}')" title="削除">×</button>
-      </span>`).join('') +
-    `<button onclick="clearAllAiFilters()" style="padding:3px 9px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-size:11px;cursor:pointer;font-family:inherit">すべてクリア</button>`;
+function renderAppliedTags(summary) {
+  const c = document.getElementById('ai_applied_tags');
+  if (!summary) { c.innerHTML = ''; return; }
+  c.innerHTML = `<span class="ai-applied-tag">✨ ${summary}<button onclick="clearSearch()" title="クリア">×</button></span>`;
 }
 
-function clearAiTag(key) {
-  if (key === 'ward') { state.ward = ''; document.querySelectorAll('.ward-btn').forEach(b=>b.classList.toggle('on',b.textContent==='全区')); }
-  else if (key === 'query') { state.query = ''; document.getElementById('q').value = ''; }
-  else if (key === 'maxPrice') { state.maxPrice = 0; document.getElementById('max_price').value = ''; }
-  else if (key === 'filterAvail') { state.filterAvail = false; document.getElementById('avail_chk').checked = false; }
-  else if (key === 'sizeFilter') { state.sizeFilter = ''; document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('on')); document.getElementById('size_hint').style.display='none'; }
-  else if (key === 'typeFilter') state.typeFilter = '';
-  else if (key.startsWith('feat_')) state.featureFilter = (state.featureFilter||[]).filter(f=>'feat_'+f!==key);
-  state.limit = 50;
-  // タグを再描画するために現在の状態から再構築
-  const pseudo = { ward:state.ward, query:state.query, maxPrice:state.maxPrice, filterAvail:state.filterAvail, sizeFilter:state.sizeFilter, typeFilter:state.typeFilter||'', features:state.featureFilter||[] };
-  renderAppliedTags(pseudo, '');
-  requestAnimationFrame(() => { renderList(); updateAdvice(); });
-}
-
-function clearAllAiFilters() {
-  state.query = ''; state.ward = ''; state.sizeFilter = ''; state.filterAvail = false;
-  state.maxPrice = 0; state.typeFilter = ''; state.featureFilter = [];
+function clearSearch() {
+  state.query = '';
+  state.aiRanking = null;
   document.getElementById('q').value = '';
-  document.getElementById('max_price').value = '';
-  document.getElementById('avail_chk').checked = false;
-  document.querySelectorAll('.ward-btn').forEach(b=>b.classList.toggle('on',b.textContent==='全区'));
-  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('on'));
-  document.getElementById('size_hint').style.display='none';
-  document.getElementById('ai_applied_tags').innerHTML='';
-  document.getElementById('ai_search_hint').textContent='🔍 キーワード入力で絞り込み、または文章でAI検索できます';
-  document.getElementById('ai_search_hint').style.color='var(--t3)';
+  document.getElementById('ai_applied_tags').innerHTML = '';
   state.limit = 50;
-  requestAnimationFrame(() => { renderList(); updateAdvice(); });
+  renderList();
+  updateAdvice();
 }
 
-function onFilter() {
-  state.filterAvail = document.getElementById('avail_chk').checked;
-  state.maxPrice = parseInt(document.getElementById('max_price').value) || 0;
-  state.limit = 50;
-  // チェックボックス・価格は即反映でOK（タイピングじゃないので）
-  requestAnimationFrame(() => { renderList(); updateAdvice(); });
-}
-
-function setWard(btn, w) {
-  state.ward = w; state.limit = 50;
-  document.querySelectorAll('.ward-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  renderList(); updateAdvice();
-}
-
-function setSize(btn, s) {
-  state.sizeFilter = state.sizeFilter === s ? '' : s;
-  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('on'));
-  if (state.sizeFilter) btn.classList.add('on');
-  const hint = document.getElementById('size_hint');
-  if (state.sizeFilter) { hint.textContent = '※ '+state.sizeFilter+'以上が入る物件を表示しています'; hint.style.display=''; }
-  else hint.style.display='none';
-  state.limit = 50;
-  renderList(); updateAdvice();
-}
 
 function handleLocate() {
   if (!navigator.geolocation) { alert('位置情報が利用できません'); return; }
@@ -899,55 +987,18 @@ function resetLoc() {
 function updateAdvice() {
   const f = getFiltered();
   const wrap = document.getElementById('ai_wrap');
-  const anyFilter = state.query || state.maxPrice || state.filterAvail || state.sizeFilter || state.userPos || state.ward || state.typeFilter || (state.featureFilter&&state.featureFilter.length);
-  if (!anyFilter) { wrap.style.display = 'none'; return; }
+  if (!state.userPos && !state.query) { wrap.style.display = 'none'; return; }
   const count = f.length;
-
-  // 近隣データを取得（アドバイスに使う）
-  const nearby = getNearbyProps(state.query, state.ward, f);
-  const nearbyWards = [...new Set(nearby.map(p=>p.ward).filter(Boolean))];
-  const nearbyStations = [...new Set(nearby.map(p=>p.station).filter(Boolean))].slice(0,3);
-
-  if (count === 0) {
-    wrap.style.display = '';
-    let noMsg = '条件に合う物件が見つかりませんでした。';
-    if (nearby.length > 0) {
-      if (nearbyWards.length > 0) noMsg += `ただし近隣の${nearbyWards.slice(0,3).join('・')}に${nearby.length}件あります。下のエリアもご検討ください。`;
-      else if (nearbyStations.length > 0) noMsg += `ただし近隣の${nearbyStations.join('・')}駅周辺に${nearby.length}件あります。`;
-    } else {
-      noMsg += '条件を緩めてみてください。';
-    }
-    document.getElementById('ai_text').textContent = noMsg;
-    return;
-  }
-
   const avail = f.filter(p=>p.available).length;
   const priced = f.filter(p=>p.price>0);
   const minP = priced.length ? Math.min(...priced.map(p=>p.price)) : 0;
   const avgP = priced.length ? Math.round(priced.reduce((s,p)=>s+p.price,0)/priced.length) : 0;
-  const roof = f.filter(p=>p.roof).length;
-
-  // メインのコメント
-  let msg = count.toLocaleString() + '件が該当。';
-  if (avail) msg += `空きあり${avail}件。`;
-  if (avgP) msg += `月額平均¥${avgP.toLocaleString()}（最安¥${minP.toLocaleString()}〜）。`;
-  if (state.userPos) msg += '現在地から近い順に表示。';
-  if (roof) msg += `屋根付き${roof}件あり。`;
-  if (state.sizeFilter) msg += `${state.sizeFilter}以上対応の物件のみ表示中。`;
-
-  // 近隣提案理由を追記
-  if (nearby.length > 0) {
-    const nearbyAvail = nearby.filter(p=>p.available).length;
-    // 駅検索の場合
-    const stMatch = state.query && state.query.match(/([^\s　]{2,5})(駅)?/);
-    if (stMatch && STATION_NEIGHBORS[stMatch[1]]) {
-      const ns = STATION_NEIGHBORS[stMatch[1]].slice(0,3).join('・');
-      msg += ` また${ns}駅など近隣エリアにも${nearby.length}件（空きあり${nearbyAvail}件）あります。`;
-    } else if (state.ward && nearbyWards.length > 0) {
-      msg += ` 隣接する${nearbyWards.slice(0,3).join('・')}にも${nearby.length}件（空きあり${nearbyAvail}件）あります。エリアを広げると更に選択肢が増えます。`;
-    }
+  let msg = count > 0 ? `${count.toLocaleString()}件が該当。` : '条件に合う物件が見つかりませんでした。条件を変えてお試しください。';
+  if (count > 0) {
+    if (avail) msg += `空きあり${avail}件。`;
+    if (avgP) msg += `月額平均¥${avgP.toLocaleString()}（最安¥${minP.toLocaleString()}〜）。`;
+    if (state.userPos) msg += '現在地から近い順に表示。';
   }
-
   wrap.style.display = '';
   document.getElementById('ai_text').textContent = msg;
 }
@@ -956,7 +1007,20 @@ function updateAdvice() {
 // RENDER PROPERTY LIST
 // ============================================================
 function renderList() {
-  const filtered = getFiltered();
+  let filtered = getFiltered();
+
+  // AIランキングがある場合：ランク付き物件を先頭に並べる
+  if (state.aiRanking && Object.keys(state.aiRanking).length > 0) {
+    const ranked = [];
+    const rest = [];
+    filtered.forEach(p => {
+      if (state.aiRanking[p.id]) ranked.push(p);
+      else rest.push(p);
+    });
+    ranked.sort((a, b) => state.aiRanking[a.id].rank - state.aiRanking[b.id].rank);
+    filtered = [...ranked, ...rest];
+  }
+
   document.getElementById('rcnt').textContent = filtered.length.toLocaleString() + '件';
   const visible = filtered.slice(0, state.limit);
   const list = document.getElementById('prop_list');
@@ -965,14 +1029,11 @@ function renderList() {
   if (visible.length === 0) {
     list.innerHTML = '<div class="empty"><div>🅿</div><div class="et">条件に合う物件が見つかりませんでした</div><div class="es">条件を変えてお試しください</div></div>';
   } else {
-    // 検索中はアニメなし（高速描画）、loadMore時のみアニメあり
     list.innerHTML = visible.map((p,i) => propCardHTML(p, isLoadMore ? i : -1)).join('');
   }
   const lmb = document.getElementById('load_more_btn');
   if (filtered.length > state.limit) {
     lmb.style.display = '';
-    lmb.textContent = '`さらに表示（残り'+filtered.length-state.limit+'件）`'
-      .replace('`さらに表示（残り', 'さらに表示（残り').replace('件）`','件）');
     lmb.textContent = `さらに表示（残り${(filtered.length-state.limit).toLocaleString()}件）`;
   } else {
     lmb.style.display = 'none';
@@ -986,10 +1047,22 @@ function propCardHTML(p, i) {
     ? `<div class="prop-price">¥${p.price.toLocaleString()}</div><div class="prop-per">/ 月（税込）</div>`
     : `<div class="prop-na">要問合せ</div>`;
   const animStyle = i >= 0 ? `animation-delay:${i*0.025}s` : 'animation:none';
+
+  // AIランキングバッジ
+  const ranking = state.aiRanking && state.aiRanking[p.id];
+  const rankBadge = ranking ? `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="background:${ranking.rank===1?'#f59e0b':ranking.rank===2?'#94a3b8':ranking.rank===3?'#cd7c3f':'var(--a)'};color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap">
+        ${ranking.rank===1?'🥇':ranking.rank===2?'🥈':ranking.rank===3?'🥉':'✨'} AIおすすめ ${ranking.rank}位
+      </span>
+      <span style="font-size:11px;color:var(--a);font-weight:600">${esc(ranking.reason)}</span>
+    </div>` : '';
+
   return `
   <div class="prop-card fadeUp" style="${animStyle}" onclick="showDetail(${p.id})">
     <div class="prop-thumb${p.available?'':' na'}">🅿</div>
     <div class="prop-body">
+      ${rankBadge}
       <div class="prop-title">${esc(p.name)}</div>
       <div class="prop-meta">${p.station?esc(p.station)+'駅 徒歩'+p.walk+'分':esc(p.address.slice(0,26))}${p.ward?' · '+p.ward:''}</div>
       <div class="prop-tags">
@@ -1013,44 +1086,9 @@ function propCardHTML(p, i) {
 function loadMore() { state.limit += 50; state._isLoadMore = true; renderList(); }
 
 function renderNearby(currentResults) {
+  // 近隣エリア表示は無効化
   const existingNearby = document.getElementById('nearby_section');
   if (existingNearby) existingNearby.remove();
-  if (!state.query && !state.ward) return;
-  const nearby = getNearbyProps(state.query, state.ward, currentResults);
-  if (nearby.length === 0) return;
-  const label = nearbyLabel(state.query, state.ward);
-  const section = document.createElement('div');
-  section.id = 'nearby_section';
-  section.style.cssText = 'margin-top:24px';
-  section.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--b)">
-      <div style="font-size:13px;font-weight:700;color:var(--t2)">${label}</div>
-      <div style="font-size:11px;color:var(--t3);margin-left:auto">${nearby.length}件</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      ${nearby.map(p => `
-      <div class="prop-card" style="border-left:3px solid var(--am);animation:none" onclick="showDetail(${p.id})">
-        <div class="prop-thumb${p.available?'':' na'}">🅿</div>
-        <div class="prop-body">
-          <div style="font-size:10px;font-weight:600;color:var(--a);margin-bottom:3px">📍 ${p.ward}</div>
-          <div class="prop-title" style="font-size:13px">${esc(p.name)}</div>
-          <div class="prop-meta">${p.station ? esc(p.station)+'駅 徒歩'+p.walk+'分' : esc(p.address.slice(0,24))}</div>
-          <div class="prop-tags">
-            <span class="tag ${p.available?'avail':'full'}">${p.available?'● 空きあり':'○ 満車'}</span>
-            ${p.size?'<span class="tag size">🚗 '+p.size+'まで</span>':''}
-            ${p.roof?'<span class="tag">屋根あり</span>':''}
-          </div>
-        </div>
-        <div class="prop-right">
-          ${p.price>0?'<div class="prop-price">¥'+p.price.toLocaleString()+'</div><div class="prop-per">/ 月</div>':'<div class="prop-na">要問合せ</div>'}
-          <div class="prop-actions">
-            <button class="btn-fill" onclick="event.stopPropagation();openInquiry(${p.id})">問い合わせ</button>
-          </div>
-        </div>
-      </div>`).join('')}
-    </div>`;
-  const lmb = document.getElementById('load_more_btn');
-  lmb.parentNode.insertBefore(section, lmb.nextSibling);
 }
 
 // ============================================================
@@ -1073,12 +1111,21 @@ function showDetail(id) {
     </div>
     <div style="padding:22px">
       <div style="font-size:21px;font-weight:900;margin-bottom:4px;letter-spacing:-.3px">${esc(p.name)}</div>
-      <div style="font-size:13px;color:var(--t2);margin-bottom:16px">${esc(p.address)}</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:16px">
+        <a href="${mapUrl}" target="_blank" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+          📍 ${esc(p.address)}
+          <span style="font-size:11px;color:var(--a);font-weight:600;border:1px solid var(--a);border-radius:4px;padding:1px 6px">地図▶</span>
+        </a>
+      </div>
       <div class="info-grid">
         ${[['最寄駅',p.station?p.station+'駅':'—'],['徒歩',p.walk?p.walk+'分':'—'],['月額',priceHTML],['車のサイズ',p.size||'普通車まで'],['タイプ',p.type||'—'],['情報源',p.source||'—']].map(([l,v])=>`<div class="info-cell"><div class="info-label">${l}</div><div class="info-value">${esc(String(v))}</div></div>`).join('')}
       </div>
       ${distHTML}
-      <a href="${mapUrl}" target="_blank" class="map-link">🗺 Google マップで確認する <span style="margin-left:auto;color:var(--t3)">→</span></a>
+      <a href="${mapUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;background:#f0f7ff;border:1.5px solid #bcd5f5;border-radius:12px;padding:13px 16px;margin-bottom:16px;text-decoration:none;color:#1a4a8a;font-size:13px;font-weight:600">
+        <span style="font-size:20px">🗺</span>
+        <span>Google マップで場所を確認する</span>
+        <span style="margin-left:auto;font-size:16px">→</span>
+      </a>
       <div class="cta-bar">
         <div><div class="cta-label">月額料金（税込）</div><div class="cta-price">${priceHTML}</div></div>
         <button class="cta-btn" onclick="openInquiry(${p.id})">📩 問い合わせる</button>
