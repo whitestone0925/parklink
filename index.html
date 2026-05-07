@@ -857,6 +857,11 @@ function getFiltered() {
   if (state.filterH24)   f = f.filter(p => p.h24);
   if (state.filterType)  f = f.filter(p => p.type === state.filterType);
 
+  // 初期表示（検索なし・現在地なし）は空きありのみ
+  if (!state.query && !state.userPos && !state.filterAvail && !state.filterRoof && !state.filterH24 && !state.filterType) {
+    f = f.filter(p => p.available);
+  }
+
   if (state.userPos) {
     f = f.map(p => ({...p, dist: calcDist(state.userPos.lat, state.userPos.lng, p.lat||0, p.lng||0)}))
          .sort((a,b)=>(a.dist||999999)-(b.dist||999999));
