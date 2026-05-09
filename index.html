@@ -167,6 +167,45 @@ button,input,select,textarea{font-family:inherit;}
 
 
 
+/* FEATURED SECTION */
+.featured-wrap{margin-bottom:24px;}
+.featured-title{font-size:16px;font-weight:800;color:var(--t);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.featured-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.featured-badge{position:absolute;top:10px;left:10px;z-index:2;background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;}
+
+/* FAVORITE */
+.fav-btn{position:absolute;top:10px;right:10px;z-index:3;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:transform .15s;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.fav-btn:hover{transform:scale(1.15);}
+.fav-btn.on{background:#fff0f0;}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* SORT TABS */
+.sort-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 16px;scrollbar-width:none;-ms-overflow-style:none;}
+.sort-tabs::-webkit-scrollbar{display:none;}
+.sort-tab{flex-shrink:0;padding:8px 18px;border-radius:24px;border:1.5px solid var(--b);background:#fff;color:var(--t);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.sort-tab:hover{border-color:var(--a);color:var(--a);}
+.sort-tab.active{background:var(--t);color:#fff;border-color:var(--t);}
+
+/* MOBILE */
+@media(max-width:600px){
+  .prop-grid{grid-template-columns:1fr 1fr;}
+  .hero-img-wrap{min-height:360px;}
+  .hero-img-title{font-size:22px;}
+  .hdr-tabs{display:none;}
+}
+@media(max-width:400px){
+  .prop-grid{grid-template-columns:1fr;}
+}
+
+/* HIGHLIGHT */
+.hl{background:#fff3b0;border-radius:3px;padding:0 1px;}
+
+/* HDR TABS */
+.hdr-tabs{display:flex;gap:4px;margin:0 20px;}
+.hdr-tab{padding:7px 16px;border-radius:20px;border:1.5px solid rgba(255,255,255,.25);background:transparent;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.hdr-tab:hover{background:rgba(255,255,255,.15);color:#fff;}
+.hdr-tab.active{background:#fff;color:var(--a);border-color:#fff;}
+
 .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;margin-bottom:14px;color:#fff;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);}
 .fc{background:var(--w);border-radius:var(--rl);padding:18px;margin-bottom:14px;border:1px solid var(--b);box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .fl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
@@ -390,8 +429,23 @@ button,input,select,textarea{font-family:inherit;}
 </style>
 </head>
 <body>
+<!-- SPLASH -->
+<div id="splash" style="position:fixed;inset:0;background:var(--a);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s">
+  <div style="width:64px;height:64px;background:var(--gold);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;margin-bottom:16px;box-shadow:0 8px 32px rgba(0,0,0,.2)">P</div>
+  <div style="font-size:24px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:6px">ParkLink</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:32px">月極駐車場をもっとかんたんに</div>
+  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
+</div>
+
 <!-- ===================== LOGIN ===================== -->
 <div id="pg_login" class="page show">
+  <!-- 管理者バナー -->
+  <div id="admin_banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:100;background:var(--a);padding:8px 20px;display:none;align-items:center;gap:10px">
+    <div style="width:8px;height:8px;border-radius:50%;background:#7ee8a2;animation:pulse 2s infinite"></div>
+    <div style="font-size:12px;font-weight:700;color:#fff">管理者セッション</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.6)">whitestone0925</div>
+    <div style="margin-left:auto;font-size:11px;color:rgba(255,255,255,.5)" id="admin_time"></div>
+  </div>
   <div class="login-logo">
     <div class="login-mark">P</div>
     <div class="login-brand">ParkLink</div>
@@ -402,13 +456,20 @@ button,input,select,textarea{font-family:inherit;}
       <div class="lc-icon">🔍</div>
       <div class="lc-title">物件を探す</div>
       <div class="lc-sub">AIチャット＋スマート検索で<br>最適な駐車場を発見</div>
-      <button class="lc-btn" style="background:#1a5c3a">物件を探す →</button>
+      <button class="lc-btn" style="background:var(--a)">物件を探す →</button>
     </div>
     <div class="lc" onclick="go('admin')">
-      <div class="lc-icon">⚙️</div>
+      <div style="position:relative;display:inline-block">
+        <div class="lc-icon">⚙️</div>
+        <div style="position:absolute;top:-4px;right:-4px;width:10px;height:10px;background:#3fb950;border-radius:50%;border:2px solid #fff"></div>
+      </div>
       <div class="lc-title">管理者</div>
-      <div class="lc-sub">物件管理・問合せ対応<br>CSVインポート対応</div>
-      <button class="lc-btn" style="background:#1a3a6c">管理画面へ →</button>
+      <div class="lc-sub">物件管理・電子契約・入金管理<br>顧客データ・問合せ対応</div>
+      <button class="lc-btn" style="background:var(--a2)">管理画面へ →</button>
+      <div style="font-size:10px;color:var(--t3);margin-top:8px;display:flex;align-items:center;gap:4px;justify-content:center">
+        <div style="width:6px;height:6px;border-radius:50%;background:#3fb950"></div>
+        管理者モード
+      </div>
     </div>
   </div>
   <div style="margin-top:36px;font-size:11px;color:#c0bdb8">※ デモ版のためログイン不要</div>
@@ -419,6 +480,13 @@ button,input,select,textarea{font-family:inherit;}
   <div class="hdr">
     <div class="hdr-logo">
       <div class="hdr-mark">P</div>ParkLink
+    </div>
+    <!-- タブ -->
+    <div class="hdr-tabs" id="hdr_tabs">
+      <button class="hdr-tab active" id="tab_search" onclick="switchTab('search')">駐車場を探す</button>
+      <button class="hdr-tab" id="tab_owner" onclick="switchTab('owner')">オーナー診断</button>
+      <button class="hdr-tab" id="tab_heatmap" onclick="switchTab('heatmap')">ParkScope</button>
+      <button class="hdr-tab" id="tab_column" onclick="switchTab('column')">コラム</button>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button class="btn-ghost" id="btn_back" style="display:none" onclick="backToList()">← 一覧に戻る</button>
@@ -437,17 +505,22 @@ button,input,select,textarea{font-family:inherit;}
           <!-- 検索バー -->
           <div class="hero-search-box">
             <div class="hero-search-inner">
-              <span class="hero-search-icon">🔍</span>
+              <span class="hero-search-icon" style="color:var(--t3);font-size:16px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </span>
               <input class="hero-search-input" id="q"
                 placeholder="エリア・駅名・地名で検索（例：新宿、じんぼうちょう）"
                 onkeydown="if(event.key==='Enter')applyAiSearch()"
-                oninput="onSearchInput(this.value)">
+                oninput="onSearchInput(this.value)"
+                onfocus="showSuggestions()" onblur="setTimeout(hideSuggestions,200)">
               <button class="hero-search-btn" id="ai_search_btn" onclick="applyAiSearch()">
-                <span>✨ AI検索</span>
+                <span>AI検索</span>
               </button>
             </div>
+            <!-- サジェスト -->
+            <div id="suggest_box" style="display:none;background:#fff;border-radius:14px;margin-top:8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.15)"></div>
             <div class="hero-search-sub">
-              <button class="hero-loc-btn" id="loc_btn" onclick="handleLocate()">📍 現在地から探す</button>
+              <button class="hero-loc-btn" id="loc_btn" onclick="handleLocate()">現在地から探す</button>
               <button class="btn-ghost" id="loc_reset" style="font-size:11px;display:none;color:#fff;border-color:rgba(255,255,255,.4)" onclick="resetLoc()">✕ リセット</button>
               <div class="ai-applied-tags" id="ai_applied_tags" style="display:inline-flex"></div>
               <div class="rcnt" id="rcnt" style="margin-left:auto;color:rgba(255,255,255,.8)"></div>
@@ -456,33 +529,78 @@ button,input,select,textarea{font-family:inherit;}
         </div>
       </div>
       <div class="results-wrap">
+      <!-- 注目物件 -->
+      <div id="featured_section" class="featured-wrap"></div>
+      <!-- 並び替えタブ -->
+      <div class="sort-tabs" id="sort_tabs">
+        <button class="sort-tab active" id="sort_default" onclick="setSort('default')">おすすめ</button>
+        <button class="sort-tab" id="sort_avail" onclick="setSort('avail')">空きあり</button>
+        <button class="sort-tab" id="sort_price" onclick="setSort('price')">安い順</button>
+        <button class="sort-tab" id="sort_walk" onclick="setSort('walk')">駅近順</button>
+        <button class="sort-tab" id="sort_fav" onclick="setSort('fav')">♡ お気に入り</button>
+      </div>
+      <!-- 価格レーダー -->
+      <div id="price_radar" style="display:none"></div>
       <div class="ai-wrap" id="ai_wrap" style="display:none">
         <div class="ai-icon">AI</div>
         <div class="ai-text" id="ai_text"></div>
       </div>
       <div class="prop-grid" id="prop_list"></div>
       <button class="load-more" id="load_more_btn" style="display:none" onclick="loadMore()">さらに表示</button>
+      <!-- フッター -->
+      <div style="text-align:center;padding:32px 0 16px;color:var(--t3);font-size:11px;line-height:1.8">
+        掲載情報は収集時点（2025年）のものです。空き状況・月額は変動する場合があります。<br>
+        契約前に必ず物件オーナー・管理会社へご確認ください。<br>
+        © 2025 ParkLink / 株式会社CSBパートナーズ
       </div>
+      </div>
+
+    <!-- オーナー診断ビュー（カウンセリング形式） -->
+    <div id="owner_view" style="display:none">
+      <div style="max-width:600px;margin:0 auto;padding:32px 20px" id="owner_counseling"></div>
     </div>
+    </div>
+    <!-- ヒートマップビュー -->
+    <div id="heatmap_view" style="display:none">
+      <div style="max-width:900px;margin:0 auto;padding:24px 16px" id="heatmap_body"></div>
+    </div>
+
+    <!-- コラムビュー -->
+    <div id="column_view" style="display:none">
+      <div style="max-width:780px;margin:0 auto;padding:32px 20px" id="column_body"></div>
+    </div>
+
+    <!-- 一気通貫フロービュー -->
+    <div id="flow_view" style="display:none">
+      <div style="max-width:800px;margin:0 auto;padding:32px 20px" id="flow_body"></div>
+    </div>
+
     <div id="detail_view" style="display:none"></div>
   </div>
 
-  <!-- INQUIRY MODAL -->
+  <!-- INQUIRY MODAL (3-step eKYC) -->
   <div class="modal-bg" id="inq_modal" style="display:none" onclick="if(event.target===this)closeInquiry()">
-    <div class="modal-box">
-      <div class="modal-hdr">
-        <div class="modal-title">問い合わせ</div>
-        <button class="modal-close" onclick="closeInquiry()">✕</button>
+    <div class="modal-box" style="max-width:480px;padding:0;overflow:hidden">
+      <!-- ステップインジケーター -->
+      <div style="background:var(--a);padding:16px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:14px;font-weight:800;color:#fff">申込・本人確認</div>
+          <button onclick="closeInquiry()" style="background:transparent;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;line-height:1">✕</button>
+        </div>
+        <div id="inq_prop_label" style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:14px"></div>
+        <!-- ステップバー -->
+        <div style="display:flex;align-items:center;gap:0">
+          ${[['1','申込情報'],['2','本人確認'],['3','完了']].map(([n,l],i,arr)=>`
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+              <div id="inq_step_circle_${n}" style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:transparent;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.5);transition:all .3s">${n}</div>
+              <div id="inq_step_label_${n}" style="font-size:9px;margin-top:4px;color:rgba(255,255,255,.5);transition:all .3s">${l}</div>
+            </div>
+            ${i<arr.length-1?`<div id="inq_step_line_${n}" style="flex:1;height:2px;background:rgba(255,255,255,.2);margin-bottom:16px;transition:all .3s"></div>`:''}`
+          ).join('')}
+        </div>
       </div>
-      <div id="inq_prop_label" style="background:var(--al);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--a);font-weight:600;margin-bottom:14px"></div>
-      <div class="form-field"><label class="form-label">お名前 *</label><input class="form-input" id="inq_name" placeholder="山田 太郎"></div>
-      <div class="form-field"><label class="form-label">メールアドレス *</label><input class="form-input" id="inq_email" type="email" placeholder="example@email.com"></div>
-      <div class="form-field"><label class="form-label">電話番号</label><input class="form-input" id="inq_tel" type="tel" placeholder="090-0000-0000"></div>
-      <div class="form-field"><label class="form-label">お問い合わせ内容</label><textarea class="form-input" id="inq_msg" rows="3" placeholder="ご質問・ご要望をご記入ください" style="resize:vertical"></textarea></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="closeInquiry()" style="flex:1;padding:10px;border-radius:9px;border:1.5px solid var(--b);background:transparent;color:var(--t2);cursor:pointer">キャンセル</button>
-        <button onclick="submitInquiry()" style="flex:2;padding:10px;border-radius:9px;border:none;background:var(--a);color:#fff;font-weight:700;cursor:pointer;font-size:13px">送信する</button>
-      </div>
+      <!-- ステップコンテンツ -->
+      <div id="inq_step_content" style="padding:20px 24px 24px"></div>
     </div>
   </div>
 
@@ -511,7 +629,9 @@ button,input,select,textarea{font-family:inherit;}
     <button class="atab on" id="tab_dash" onclick="adminTab('dash')">ダッシュボード</button>
     <button class="atab" id="tab_props" onclick="adminTab('props')">物件管理</button>
     <button class="atab" id="tab_inq" onclick="adminTab('inq')">問い合わせ</button>
-    <button class="atab" id="tab_app" onclick="adminTab('app')">申込管理</button>
+    <button class="atab" id="tab_contract" onclick="adminTab('contract')">電子契約</button>
+    <button class="atab" id="tab_payment" onclick="adminTab('payment')">入金管理</button>
+    <button class="atab" id="tab_customer" onclick="adminTab('customer')">顧客データ</button>
     <button onclick="go('login')" style="margin-left:auto;padding:5px 11px;border-radius:7px;border:1px solid #30363d;background:transparent;color:#8b949e;font-size:11px;cursor:pointer;font-family:inherit">退出</button>
   </div>
   <div class="admin-main" id="admin_body"></div>
@@ -676,6 +796,7 @@ let state = {
   filterH24: false,
   filterType: '',
   activeStatFilter: '',
+  sortMode: 'default',
   selectedProp: null, inquiryProp: null,
   limit: 50,
   chatOpen: false, chatTyping: false,
@@ -685,10 +806,27 @@ let state = {
   inquiries: [
     {id:1,name:'田中 太郎',email:'tanaka@example.com',tel:'090-1234-5678',propertyName:'九段北パーキング',message:'契約したいです',date:'2026-04-25',status:'未対応'},
     {id:2,name:'佐藤 花子',email:'sato@example.com',tel:'080-9876-5432',propertyName:'飯田橋コーポ',message:'ワンボックスは入りますか',date:'2026-04-27',status:'対応済'},
+    {id:3,name:'鈴木 健一',email:'suzuki@example.com',tel:'070-1111-2222',propertyName:'西神田一丁目2',message:'来月から使いたいです',date:'2026-05-01',status:'未対応'},
   ],
-  applications: [
-    {id:1,name:'山田 次郎',email:'yamada@example.com',carType:'普通車',propertyName:'九段北パーキング',startDate:'2026-05-01',date:'2026-04-26',status:'審査中'},
-    {id:2,name:'中村 美咲',email:'nakamura@example.com',carType:'軽自動車',propertyName:'飯田橋コーポ',startDate:'2026-05-15',date:'2026-04-28',status:'承認済'},
+  contracts: [
+    {id:1,name:'田中 太郎',propertyName:'九段北パーキング',monthlyFee:28512,startDate:'2026-05-01',endDate:'2027-04-30',status:'署名待ち',carType:'普通車',sentDate:'2026-05-02'},
+    {id:2,name:'山田 次郎',propertyName:'西神田一丁目2',monthlyFee:39204,startDate:'2026-04-01',endDate:'2027-03-31',status:'締結済み',carType:'軽自動車',sentDate:'2026-03-28'},
+    {id:3,name:'中村 美咲',propertyName:'飯田橋コーポ',monthlyFee:45000,startDate:'2026-03-01',endDate:'2027-02-28',status:'締結済み',carType:'普通車',sentDate:'2026-02-25'},
+    {id:4,name:'小林 拓也',propertyName:'秋葉原第2パーキング',monthlyFee:52000,startDate:'2026-06-01',endDate:'2027-05-31',status:'作成中',carType:'ワンボックス',sentDate:'—'},
+  ],
+  payments: [
+    {id:1,name:'山田 次郎',propertyName:'西神田一丁目2',amount:39204,month:'2026-05',dueDate:'2026-05-25',paidDate:'2026-05-23',status:'入金済み'},
+    {id:2,name:'中村 美咲',propertyName:'飯田橋コーポ',amount:45000,month:'2026-05',dueDate:'2026-05-25',paidDate:'2026-05-25',status:'入金済み'},
+    {id:3,name:'田中 太郎',propertyName:'九段北パーキング',amount:28512,month:'2026-05',dueDate:'2026-05-25',paidDate:null,status:'未入金'},
+    {id:4,name:'山田 次郎',propertyName:'西神田一丁目2',amount:39204,month:'2026-04',dueDate:'2026-04-25',paidDate:'2026-04-24',status:'入金済み'},
+    {id:5,name:'中村 美咲',propertyName:'飯田橋コーポ',amount:45000,month:'2026-04',dueDate:'2026-04-25',paidDate:'2026-04-26',status:'入金済み'},
+    {id:6,name:'田中 太郎',propertyName:'九段北パーキング',amount:28512,month:'2026-04',dueDate:'2026-04-25',paidDate:'2026-04-30',status:'遅延入金'},
+  ],
+  customers: [
+    {id:1,name:'山田 次郎',email:'yamada@example.com',tel:'090-0001-0001',carType:'軽自動車',contractCount:2,totalPaid:156816,status:'契約中',since:'2025-04-01',memo:'毎月25日前後に入金'},
+    {id:2,name:'中村 美咲',email:'nakamura@example.com',tel:'080-0002-0002',carType:'普通車',contractCount:1,totalPaid:135000,status:'契約中',since:'2025-03-01',memo:'更新希望あり'},
+    {id:3,name:'田中 太郎',email:'tanaka@example.com',tel:'090-1234-5678',carType:'普通車',contractCount:1,totalPaid:28512,status:'審査中',since:'2026-05-01',memo:'入金遅れ注意'},
+    {id:4,name:'佐藤 花子',email:'sato@example.com',tel:'080-9876-5432',carType:'ワンボックス',contractCount:0,totalPaid:0,status:'問い合わせ中',since:'2026-04-27',memo:''},
   ],
 };
 
@@ -705,6 +843,19 @@ function go(mode) {
   state.mode = mode;
   if (mode === 'customer') initCustomer();
   if (mode === 'admin') { adminTab('dash'); }
+  // 管理者バナー表示（一度管理画面に入ったら表示）
+  if (mode === 'admin' || state._hasAdmin) {
+    state._hasAdmin = true;
+    const banner = document.getElementById('admin_banner');
+    if (banner && mode === 'login') {
+      banner.style.display = 'flex';
+      // 時刻更新
+      const timeEl = document.getElementById('admin_time');
+      if (timeEl) timeEl.textContent = 'ログイン済み ' + new Date().toLocaleTimeString('ja-JP', {hour:'2-digit',minute:'2-digit'});
+    } else if (banner) {
+      banner.style.display = 'none';
+    }
+  }
 }
 
 // ============================================================
@@ -714,6 +865,7 @@ function initCustomer() {
   document.getElementById('hero_count').textContent = state.properties.length.toLocaleString() + '件掲載中';
   state.limit = 50;
   renderList();
+  renderFeatured();
   initChat();
 }
 
@@ -865,6 +1017,17 @@ function getFiltered() {
   if (state.userPos) {
     f = f.map(p => ({...p, dist: calcDist(state.userPos.lat, state.userPos.lng, p.lat||0, p.lng||0)}))
          .sort((a,b)=>(a.dist||999999)-(b.dist||999999));
+  } else {
+    // ソートモード
+    if (state.sortMode === 'price') {
+      f = f.filter(p=>p.price>0).sort((a,b)=>a.price-b.price).concat(f.filter(p=>p.price<=0));
+    } else if (state.sortMode === 'walk') {
+      f = f.filter(p=>p.walk>0).sort((a,b)=>a.walk-b.walk).concat(f.filter(p=>p.walk<=0));
+    } else if (state.sortMode === 'avail') {
+      f = f.filter(p=>p.available).concat(f.filter(p=>!p.available));
+    } else if (state.sortMode === 'fav') {
+      f = f.filter(p => favorites.includes(p.id));
+    }
   }
   return f;
 }
@@ -1098,6 +1261,1105 @@ function toggleStatFilter(key) {
   updateAdvice();
 }
 
+// ============================================================
+// SPLASH SCREEN
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const s = document.getElementById('splash');
+    s.style.opacity = '0';
+    setTimeout(() => s.style.display = 'none', 500);
+  }, 800);
+  // URLパラメータ対応
+  const params = new URLSearchParams(location.search);
+  const q = params.get('q');
+  if (q) {
+    // クエリがあればログインをスキップして直接検索
+    setTimeout(() => {
+      go('customer');
+      document.getElementById('q').value = q;
+      state.query = q;
+      state.limit = 50;
+      renderList();
+      updateAdvice();
+    }, 900);
+  }
+});
+
+// ============================================================
+// FAVORITES
+// ============================================================
+let favorites = JSON.parse(localStorage.getItem('parklink_favs') || '[]');
+
+function toggleFav(id, e) {
+  e.stopPropagation();
+  const idx = favorites.indexOf(id);
+  if (idx >= 0) favorites.splice(idx, 1);
+  else favorites.push(id);
+  localStorage.setItem('parklink_favs', JSON.stringify(favorites));
+  // ボタンの状態更新
+  document.querySelectorAll(`.fav-btn[data-id="${id}"]`).forEach(btn => {
+    btn.classList.toggle('on', favorites.includes(id));
+    btn.textContent = favorites.includes(id) ? '♥' : '♡';
+  });
+  if (state.sortMode === 'fav') { renderList(); }
+}
+
+function isFav(id) { return favorites.includes(id); }
+
+// ============================================================
+// FEATURED PROPERTIES
+// ============================================================
+function renderFeatured() {
+  const el = document.getElementById('featured_section');
+  if (state.query || state.userPos) { el.innerHTML = ''; return; }
+
+  // スコアリング：空きあり(+30)・価格安め(+20)・駅近(+15)・屋根あり(+5)
+  const scored = state.properties
+    .filter(p => p.available && p.price > 0 && p.station)
+    .map(p => {
+      let score = 30;
+      if (p.price < 20000) score += 20;
+      else if (p.price < 30000) score += 10;
+      if (p.walk > 0 && p.walk <= 3) score += 15;
+      else if (p.walk <= 5) score += 8;
+      if (p.roof) score += 5;
+      if (p.h24) score += 3;
+      return { ...p, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  if (scored.length === 0) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+    <div class="featured-title" style="color:#fff">
+      <span style="width:4px;height:18px;background:var(--gold);border-radius:2px;display:inline-block"></span>
+      今週の注目物件
+    </div>
+    <div class="featured-grid">
+      ${scored.map(p => featuredCardHTML(p)).join('')}
+    </div>
+    <div style="height:1px;background:rgba(255,255,255,.15);margin:24px 0"></div>`;
+}
+
+function featuredCardHTML(p) {
+  const fav = isFav(p.id);
+  return `
+  <div class="prop-card fadeUp" style="animation:none" onclick="showDetail(${p.id})">
+    <div class="prop-thumb" style="position:relative;background:${p.available?'linear-gradient(135deg,var(--al),#dde6f5)':'linear-gradient(135deg,#f0f0f0,#e0e0e0)'}">
+      <span class="featured-badge">注目</span>
+      <button class="fav-btn ${fav?'on':''}" data-id="${p.id}" onclick="toggleFav(${p.id}, event)">${fav?'♥':'♡'}</button>
+      ${parkingIcon(p.type)}
+    </div>
+    <div class="prop-body">
+      <div class="prop-title">${esc(p.name)}</div>
+      <div class="prop-meta">${p.station}駅 徒歩${p.walk}分 · ${p.ward}</div>
+      <div class="prop-tags">
+        <span class="tag avail">空きあり</span>
+        ${p.roof?'<span class="tag">屋根あり</span>':''}
+        ${p.h24?'<span class="tag">24h</span>':''}
+      </div>
+    </div>
+    <div class="prop-right">
+      <div class="prop-price">¥${p.price.toLocaleString()}<span> / 月</span></div>
+      <div class="prop-actions">
+        <button class="btn-fill" onclick="event.stopPropagation();openInquiry(${p.id})">問い合わせ</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// PARKING TYPE SVG ICONS
+// ============================================================
+function parkingIcon(type) {
+  if (type === '機械式') return `
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="30" width="36" height="14" rx="3" fill="var(--a)" opacity=".15"/>
+      <rect x="8" y="14" width="36" height="14" rx="3" fill="var(--a)" opacity=".25"/>
+      <rect x="14" y="18" width="10" height="6" rx="2" fill="var(--a)" opacity=".5"/>
+      <rect x="28" y="18" width="10" height="6" rx="2" fill="var(--a)" opacity=".5"/>
+      <rect x="14" y="34" width="10" height="6" rx="2" fill="var(--a)" opacity=".5"/>
+      <rect x="28" y="34" width="10" height="6" rx="2" fill="var(--a)" opacity=".5"/>
+      <rect x="24" y="10" width="4" height="32" rx="2" fill="var(--gold)" opacity=".6"/>
+    </svg>`;
+  if (type === '立体') return `
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="38" width="36" height="6" rx="2" fill="var(--a)" opacity=".2"/>
+      <rect x="8" y="28" width="36" height="8" rx="2" fill="var(--a)" opacity=".25"/>
+      <rect x="8" y="18" width="36" height="8" rx="2" fill="var(--a)" opacity=".3"/>
+      <rect x="8" y="10" width="36" height="6" rx="2" fill="var(--a)" opacity=".2"/>
+      <path d="M12 10 L12 44" stroke="var(--gold)" stroke-width="2" opacity=".6"/>
+      <path d="M40 10 L40 44" stroke="var(--gold)" stroke-width="2" opacity=".6"/>
+    </svg>`;
+  // 平置き（デフォルト）
+  return `
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="20" width="40" height="16" rx="4" fill="var(--a)" opacity=".12"/>
+      <path d="M10 28 Q26 20 42 28" stroke="var(--a)" stroke-width="2" opacity=".3" fill="none"/>
+      <rect x="14" y="24" width="8" height="8" rx="2" fill="var(--a)" opacity=".3"/>
+      <rect x="30" y="24" width="8" height="8" rx="2" fill="var(--a)" opacity=".3"/>
+      <rect x="6" y="36" width="40" height="3" rx="1.5" fill="var(--b2)" opacity=".5"/>
+      <rect x="6" y="16" width="40" height="3" rx="1.5" fill="var(--b2)" opacity=".5"/>
+    </svg>`;
+}
+
+
+// ============================================================
+// HEATMAP（株価風相場マップ）
+// ============================================================
+const WARD_STATS = {"千代田区":{"avg":45323,"min":6920,"max":95040,"total":125,"avail":28,"availRate":22},"中央区":{"avg":42801,"min":3404,"max":95040,"total":103,"avail":10,"availRate":10},"港区":{"avg":47063,"min":10185,"max":95040,"total":72,"avail":20,"availRate":28},"新宿区":{"avg":40788,"min":9592,"max":83160,"total":107,"avail":18,"availRate":17},"文京区":{"avg":41110,"min":6920,"max":95040,"total":95,"avail":17,"availRate":18},"台東区":{"avg":37006,"min":3423,"max":98999,"total":184,"avail":19,"availRate":10},"墨田区":{"avg":33638,"min":11880,"max":98999,"total":223,"avail":18,"availRate":8},"江東区":{"avg":31786,"min":5518,"max":54000,"total":109,"avail":11,"availRate":10},"品川区":{"avg":33620,"min":3404,"max":64152,"total":149,"avail":21,"availRate":14},"目黒区":{"avg":40016,"min":11880,"max":95040,"total":94,"avail":7,"availRate":7},"大田区":{"avg":27636,"min":3729,"max":95040,"total":266,"avail":11,"availRate":4},"世田谷区":{"avg":30751,"min":10185,"max":57750,"total":75,"avail":6,"availRate":8},"渋谷区":{"avg":44184,"min":21384,"max":95040,"total":83,"avail":12,"availRate":14},"中野区":{"avg":30243,"min":11087,"max":63070,"total":77,"avail":4,"availRate":5},"杉並区":{"avg":24961,"min":10004,"max":47520,"total":73,"avail":2,"availRate":3},"豊島区":{"avg":35681,"min":13068,"max":95040,"total":129,"avail":6,"availRate":5},"北区":{"avg":29276,"min":11880,"max":61314,"total":111,"avail":6,"availRate":5},"荒川区":{"avg":27812,"min":11880,"max":71280,"total":129,"avail":8,"availRate":6},"板橋区":{"avg":27992,"min":13068,"max":71280,"total":139,"avail":13,"availRate":9},"練馬区":{"avg":21424,"min":10004,"max":48915,"total":147,"avail":10,"availRate":7},"足立区":{"avg":17448,"min":5665,"max":47784,"total":295,"avail":22,"availRate":7},"葛飾区":{"avg":17751,"min":10780,"max":49896,"total":190,"avail":25,"availRate":13},"江戸川区":{"avg":19283,"min":5273,"max":35640,"total":89,"avail":10,"availRate":11}};
+
+// 相場ランク別の色（株価風：高い=赤系・安い=緑系）
+function wardColor(avg) {
+  if (avg >= 42000) return { bg:'#c0392b', text:'#fff', label:'最高値' };
+  if (avg >= 38000) return { bg:'#e74c3c', text:'#fff', label:'高値圏' };
+  if (avg >= 33000) return { bg:'#e67e22', text:'#fff', label:'やや高い' };
+  if (avg >= 28000) return { bg:'#f39c12', text:'#fff', label:'平均帯' };
+  if (avg >= 23000) return { bg:'#27ae60', text:'#fff', label:'やや安い' };
+  return { bg:'#16a085', text:'#fff', label:'割安圏' };
+}
+
+// 需給シグナル
+function demandSignal(d) {
+  if (d.availRate >= 20) return { icon:'🔥', label:'需要旺盛', color:'#e74c3c' };
+  if (d.availRate >= 12) return { icon:'📈', label:'需要普通', color:'#e67e22' };
+  if (d.availRate <= 5)  return { icon:'⚠️', label:'空き少', color:'#8e44ad' };
+  return { icon:'📊', label:'安定', color:'#27ae60' };
+}
+
+let heatmapSort = 'avg';
+let selectedWard = null;
+
+function renderHeatmap() {
+  const el = document.getElementById('heatmap_body');
+  const wards = Object.entries(WARD_STATS);
+  const sorted = [...wards].sort((a,b) => {
+    if (heatmapSort === 'avg') return b[1].avg - a[1].avg;
+    if (heatmapSort === 'avail') return b[1].availRate - a[1].availRate;
+    if (heatmapSort === 'total') return b[1].total - a[1].total;
+    return b[1].avg - a[1].avg;
+  });
+  const maxAvg = Math.max(...wards.map(w=>w[1].avg));
+  const minAvg = Math.min(...wards.map(w=>w[1].avg));
+  const maxTotal = Math.max(...wards.map(w=>w[1].total));
+  const totalProps = wards.reduce((s,[,d])=>s+d.total,0);
+  const totalAvail = wards.reduce((s,[,d])=>s+d.avail,0);
+
+  el.innerHTML = `
+    <!-- ヘッダー -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:22px;font-weight:900;color:var(--t);margin-bottom:4px">ParkScope — 東京23区 相場レーダー</div>
+      <div style="font-size:12px;color:var(--t2)">ParkLinkの実データ ${totalProps.toLocaleString()}件をもとに集計 · 2026年5月時点</div>
+    </div>
+
+    <!-- サマリーカード -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      ${[
+        ['都内平均月額', '¥'+ Math.round(wards.reduce((s,[,d])=>s+(d.avg*d.total),0)/totalProps).toLocaleString(), '#0d2b4e'],
+        ['空きあり物件', totalAvail.toLocaleString()+'件', '#1a5c3a'],
+        ['最高値エリア', '港区 ¥47,063', '#c0392b'],
+      ].map(([l,v,c])=>`
+        <div style="background:#fff;border-radius:12px;padding:12px 14px;border:1px solid var(--b);text-align:center">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">${l}</div>
+          <div style="font-size:15px;font-weight:900;color:${c}">${v}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- 凡例 -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="font-size:11px;color:var(--t3);margin-right:4px">月額相場：</div>
+      ${[['42,000円〜','#c0392b'],['38〜42万','#e74c3c'],['33〜38万','#e67e22'],['28〜33万','#f39c12'],['23〜28万','#27ae60'],['〜23,000円','#16a085']].map(([l,c])=>`
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="width:12px;height:12px;border-radius:3px;background:${c}"></div>
+          <div style="font-size:10px;color:var(--t2)">${l}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- ソートボタン -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      ${[['avg','月額順'],['avail','空き率順'],['total','物件数順']].map(([k,l])=>`
+        <button onclick="heatmapSort='${k}';renderHeatmap()" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${heatmapSort===k?'var(--a)':'var(--b)'};background:${heatmapSort===k?'var(--a)':'#fff'};color:${heatmapSort===k?'#fff':'var(--t2)'};font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">${l}</button>`).join('')}
+    </div>
+
+    <!-- ヒートマップ本体 -->
+    <div id="heatmap_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px">
+      ${sorted.map(([ward,d],i)=>{
+        const c = wardColor(d.avg);
+        const sig = demandSignal(d);
+        const sizeRatio = 0.7 + (d.total / maxTotal) * 0.3;
+        const rank = i + 1;
+        return `
+        <div onclick="selectWardDetail('${ward}')"
+          style="background:${c.bg};border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;aspect-ratio:1"
+          onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.2)'"
+          onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none'">
+          <!-- ランク -->
+          <div style="position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;color:rgba(255,255,255,.5)">#${rank}</div>
+          <!-- 区名 -->
+          <div style="font-size:13px;font-weight:900;color:${c.text};margin-bottom:4px;line-height:1.2">${ward.replace('区','')}<span style="font-size:9px;opacity:.7">区</span></div>
+          <!-- 平均価格 -->
+          <div style="font-size:16px;font-weight:900;color:${c.text};letter-spacing:-.5px">¥${(d.avg/1000).toFixed(1)}<span style="font-size:10px;opacity:.8">万</span></div>
+          <!-- シグナル -->
+          <div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:4px">${sig.icon} ${sig.label}</div>
+          <!-- 物件数バー -->
+          <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.2)">
+            <div style="height:100%;background:rgba(255,255,255,.6);width:${Math.round(d.total/maxTotal*100)}%"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- 詳細パネル -->
+    <div id="ward_detail_panel"></div>
+
+    <!-- 一覧テーブル -->
+    <div style="background:#fff;border-radius:16px;border:1px solid var(--b);overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--b);font-size:13px;font-weight:700;color:var(--t)">詳細データ一覧</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:var(--bg)">
+              ${['区名','平均月額','最安値','空き率','物件数','シグナル'].map(h=>`<th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--t2);white-space:nowrap">${h}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(([ward,d],i)=>{
+              const c = wardColor(d.avg);
+              const sig = demandSignal(d);
+              return `<tr style="border-bottom:1px solid var(--b);cursor:pointer" onclick="selectWardDetail('${ward}')"
+                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+                <td style="padding:10px 12px;font-weight:700;color:var(--t)">${ward}</td>
+                <td style="padding:10px 12px">
+                  <span style="background:${c.bg};color:#fff;padding:3px 10px;border-radius:20px;font-weight:700;font-size:11px">¥${d.avg.toLocaleString()}</span>
+                </td>
+                <td style="padding:10px 12px;color:var(--t2)">¥${d.min.toLocaleString()}</td>
+                <td style="padding:10px 12px">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div style="width:40px;height:4px;background:var(--b);border-radius:2px;overflow:hidden">
+                      <div style="height:100%;background:${d.availRate>=15?'#e74c3c':'#27ae60'};width:${Math.min(d.availRate*3,100)}%"></div>
+                    </div>
+                    <span style="color:${d.availRate>=15?'#e74c3c':'var(--t2)'};font-weight:${d.availRate>=15?700:400}">${d.availRate}%</span>
+                  </div>
+                </td>
+                <td style="padding:10px 12px;color:var(--t2)">${d.total}件</td>
+                <td style="padding:10px 12px">${sig.icon} <span style="color:${sig.color};font-size:11px;font-weight:600">${sig.label}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function selectWardDetail(ward) {
+  const d = WARD_STATS[ward];
+  if (!d) return;
+  const c = wardColor(d.avg);
+  const sig = demandSignal(d);
+  const panel = document.getElementById('ward_detail_panel');
+  panel.innerHTML = `
+    <div class="fadeUp" style="background:#fff;border-radius:16px;padding:20px;border:2px solid ${c.bg};margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="width:44px;height:44px;background:${c.bg};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0">${ward[0]}</div>
+        <div>
+          <div style="font-size:18px;font-weight:900;color:var(--t)">${ward}</div>
+          <div style="font-size:12px;color:${sig.color};font-weight:600">${sig.icon} ${sig.label} · ${c.label}</div>
+        </div>
+        <button onclick="document.getElementById('ward_detail_panel').innerHTML=''" style="margin-left:auto;background:transparent;border:none;color:var(--t3);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">
+        ${[
+          ['平均月額', '¥'+d.avg.toLocaleString(), c.bg],
+          ['最安値', '¥'+d.min.toLocaleString(), '#1a5c3a'],
+          ['空きあり', d.avail+'件 ('+d.availRate+'%)', d.availRate>=15?'#e74c3c':'#1a5c3a'],
+          ['掲載物件数', d.total+'件', '#0d2b4e'],
+        ].map(([l,v,col])=>`
+          <div style="background:var(--bg);border-radius:10px;padding:12px 14px">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:3px">${l}</div>
+            <div style="font-size:16px;font-weight:800;color:${col}">${v}</div>
+          </div>`).join('')}
+      </div>
+      <button onclick="state.query='${ward}';switchTab('search');renderList();updateAdvice()"
+        style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+        ${ward}の物件を検索する →
+      </button>
+    </div>`;
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+
+const ARTICLES = [
+  {
+    id: 1, category: '基礎知識', tag: '#月極駐車場',
+    title: '月極駐車場と時間貸し駐車場の違いとは？自分に合った選び方ガイド',
+    summary: '月極駐車場と時間貸し（コインパーキング）はどう違うのか。コスト・利便性・契約の観点から徹底比較します。',
+    date: '2026-05-01', readTime: '3分',
+    content: `<h2>月極駐車場とは？</h2><p>月極駐車場とは、月単位で契約して毎月定額の駐車料金を支払う駐車場です。長期利用を前提とした契約形態で、自宅や職場の近くに車を置きたい方に最適です。</p><h2>時間貸し駐車場との違い</h2><p>時間貸し（コインパーキング）は使った時間分だけ料金が発生します。毎日通勤などで使う場合は月極の方が圧倒的にコスパが高くなります。</p><p>例えばコインパーキングで1日500円かかる場合、月22日利用すると月11,000円。同エリアの月極が15,000円でも週末も停めるなら月極の方が安くなることがほとんどです。</p><h2>月極駐車場を選ぶべき人</h2><p>毎日または週4日以上車を使う方、決まった場所に確実に停めたい方、コインパーキングの空き待ちが煩わしい方には月極がおすすめです。</p>`
+  },
+  {
+    id: 2, category: '契約', tag: '#契約のポイント',
+    title: '月極駐車場の契約前に確認すべき7つのチェックリスト',
+    summary: '契約後のトラブルを避けるために、契約前に必ず確認しておきたいポイントを7つにまとめました。',
+    date: '2026-05-03', readTime: '4分',
+    content: `<h2>契約前の7つのチェックリスト</h2><h3>① 車のサイズが入るか</h3><p>全長・全幅・全高・車重を事前に確認。特に機械式駐車場は制限が厳しいため、車のスペックと照合してください。</p><h3>② 月額以外の費用</h3><p>敷金・管理費・事務手数料が発生する場合があります。初期費用の総額を必ず確認しましょう。</p><h3>③ 解約通知の期間</h3><p>多くの契約で「解約1ヶ月前通知」が必要です。引越しや転勤の際にトラブルになりやすいポイントです。</p><h3>④ 24時間入出庫できるか</h3><p>管理会社によっては夜間の入出庫に制限がある場合があります。</p><h3>⑤ 屋根・防犯設備の有無</h3><p>屋根付きは雨・鳥害・日焼けから車を守ります。防犯カメラや照明の有無も重要です。</p><h3>⑥ 契約書の内容</h3><p>禁止事項（洗車・車中泊等）を必ず確認してください。</p><h3>⑦ 緊急連絡先</h3><p>機械式の故障や近隣トラブルの際の連絡先が明確かどうか確認しておきましょう。</p>`
+  },
+  {
+    id: 3, category: '節約', tag: '#コスト削減',
+    title: '駐車場代を年間10万円節約する方法｜エリア選びで差がつくコスト術',
+    summary: '駐車場を少し工夫するだけで年間数万円の節約が可能です。エリア選び・交渉術・タイミングを解説します。',
+    date: '2026-05-05', readTime: '5分',
+    content: `<h2>駐車場代は「場所」で大きく変わる</h2><p>同じ駅でも徒歩5分→10分になるだけで月額が5,000〜15,000円変わることがあります。新宿駅徒歩3分で月50,000円の物件が、徒歩10分では月25,000円になるケースも。年間300,000円の差です。</p><h2>駅の「裏側」を探す</h2><p>人気エリアは駅の主要出口側に集中しています。北口・裏口側は相場が10〜20%安い傾向があります。</p><h2>隣駅を狙う</h2><p>都心の駅から1駅隣に変えるだけで相場が大きく変わります。勤務地まで電車1本なら隣駅も選択肢に。</p><h2>交渉のポイント</h2><p>長期契約（2年以上）や一括払いの意向を伝えると、月額を値下げしてもらえる場合があります。</p>`
+  },
+  {
+    id: 4, category: '知識', tag: '#機械式駐車場',
+    title: '機械式駐車場の種類と注意点｜入庫できない車を事前に防ぐ方法',
+    summary: '機械式駐車場には複数の種類があり、車のサイズによっては入庫できない場合があります。事前確認のポイントを解説。',
+    date: '2026-05-07', readTime: '4分',
+    content: `<h2>機械式駐車場の主な種類</h2><p>「二段式」「多段式」「パズル式」「エレベーター式」の4種類があります。それぞれ収容台数・サイズ制限・操作方法が異なります。</p><h2>サイズ制限の確認方法</h2><p>必ず「全長・全幅・全高・重量」の4つを確認します。全長5,000mm以下・全幅1,850mm以下・全高1,550mm以下・重量2,000kg以下が一般的な制限です。</p><h2>入庫できない車の例</h2><p>アルファード・ヴェルファイア（全高1,950mm〜）、ハイエース（全高2,100mm〜）は多くの機械式に入庫できません。契約前に必ず管理会社に車のスペックを伝えて確認しましょう。</p>`
+  },
+  {
+    id: 5, category: 'オーナー向け', tag: '#駐車場経営',
+    title: '空き駐車場を月極に転換すると年間いくら稼げる？収益シミュレーション',
+    summary: '使っていない土地や駐車スペースを月極駐車場として貸し出した場合の収益をシミュレーションします。',
+    date: '2026-05-09', readTime: '5分',
+    content: `<h2>月極駐車場の収益ポテンシャル</h2><p>東京都内では月極駐車場の平均月額が約30,000〜50,000円。1台分のスペースでも年間36〜60万円の収入が期待できます。</p><h2>エリア別の相場目安</h2><p>都心（千代田区・港区）：月40,000〜80,000円、城南・城西（世田谷区・杉並区）：月20,000〜40,000円、郊外（多摩・八王子）：月10,000〜20,000円。</p><h2>収益シミュレーション</h2><p>新宿区のスペース3台分を月35,000円で貸し出した場合、月収105,000円、年収1,260,000円。固定資産税や管理費を引いても年間100万円超の収益が見込めます。</p><h2>ParkLinkで掲載するメリット</h2><p>エリアで駐車場を探しているユーザーに直接アプローチできます。オーナー診断機能で周辺相場もすぐに確認できます。</p>`
+  },
+  {
+    id: 6, category: '基礎知識', tag: '#よくある質問',
+    title: '月極駐車場のよくある質問10選｜初めての契約で迷わないために',
+    summary: '月極駐車場の契約で初めての方が迷いがちな疑問を10個ピックアップして分かりやすく解説します。',
+    date: '2026-05-10', readTime: '6分',
+    content: `<h2>Q1. 敷金はいくらが相場？</h2><p>月額の1〜3ヶ月分が一般的です。退去時に原状回復費用を差し引いて返還されます。</p><h2>Q2. 審査はあるの？</h2><p>身分証明書・車検証の提出が必要です。審査自体は数日〜1週間程度です。</p><h2>Q3. 解約はいつでもできる？</h2><p>多くの場合、1〜2ヶ月前の書面通知が必要です。</p><h2>Q4. 車を替えたら申告が必要？</h2><p>はい。車検証の内容変更があった場合は管理会社への届け出が必要です。</p><h2>Q5. 他人に貸してもいい？</h2><p>原則禁止です。転貸（又貸し）は契約違反となり、即時解約になる場合があります。</p><h2>Q6. 洗車はできる？</h2><p>水を使った洗車を禁止している駐車場も多いため、事前確認が必要です。</p>`
+  },
+  {
+    id: 7, category: '法人向け', tag: '#コスト削減',
+    title: '社用車の駐車場コストを30%削減した3つの方法',
+    summary: '複数台の社用車を管理する企業が実践している、駐車場コスト削減の具体的な手法を3つ紹介します。',
+    date: '2026-05-11', readTime: '5分',
+    content: `<h2>法人の駐車場コストは「見直し余地」が大きい</h2><p>社用車を複数台保有する企業の多くは、駐車場契約を「一度決めたらそのまま」にしがちです。担当者が変わるたびに引き継ぎが曖昧になり、相場より高い契約が何年も続くケースが少なくありません。実際に弊社の調査では、法人の駐車場契約の約40%が周辺相場より10%以上高い月額を支払っていました。</p><h2>方法① エリアの分散化</h2><p>本社や営業所の目の前に全台停める必要はありません。徒歩5〜10分圏内に分散させるだけで、月額を20〜40%削減できるケースがあります。特に都心では、1ブロック離れるだけで月額が1万円以上変わることも珍しくありません。</p><h2>方法② 契約の一元管理と棚卸し</h2><p>まず全社の駐車場契約を一覧化します。拠点別・担当者別・月額・契約終了日を整理すると、「誰も使っていないのに契約が続いている」空き契約が見つかることがあります。こうした幽霊契約の解約だけで年間数十万円の削減になった企業もあります。</p><h2>方法③ 一括契約交渉</h2><p>複数台をまとめて同じ管理会社と契約することで、台数割引や管理費免除を引き出せることがあります。「5台以上で月額5%引き」という条件を提示している管理会社も増えています。ParkLinkのオーナー診断機能で周辺相場を把握してから交渉に臨むと成功率が上がります。</p>`
+  },
+  {
+    id: 8, category: 'トラブル対応', tag: '#トラブル',
+    title: '月極駐車場でよくあるトラブルと解決法10選',
+    summary: '契約後に発生しやすいトラブルを10パターン紹介し、それぞれの対処法と予防策を解説します。',
+    date: '2026-05-11', readTime: '6分',
+    content: `<h2>トラブル① 隣の車にキズをつけられた</h2><p>防犯カメラの映像確認を管理会社に依頼し、相手を特定できた場合は保険会社を通じて請求します。特定できない場合は自分の車両保険で対応することになります。契約時に防犯カメラの有無を確認しておくことが予防策です。</p><h2>トラブル② 機械式が故障して出庫できない</h2><p>管理会社の緊急連絡先に即時連絡します。深夜・休日でも対応義務がある場合がほとんどです。復旧までの代替駐車場費用は管理会社負担になるケースもあります。</p><h2>トラブル③ 解約を申し出たが敷金が返ってこない</h2><p>原状回復の範囲と敷金精算の内訳を書面で請求します。通常の使用による劣化は借主負担ではありません。内容に納得できない場合は国土交通省のガイドラインを根拠に交渉できます。</p><h2>トラブル④ 月額が突然値上げされた</h2><p>契約書に値上げ条件が明記されているか確認します。値上げ通知は通常1〜3ヶ月前が必要です。同意しない場合は解約の権利があります。</p><h2>トラブル⑤ 契約した駐車スペースに他の車が停まっている</h2><p>勝手に移動させず、管理会社に連絡して対応を依頼します。繰り返す場合は警察への相談も有効です。</p><h2>トラブル⑥ 大雨で駐車場が浸水した</h2><p>被害状況を写真で記録し、管理会社に報告します。天災による損害は通常管理会社の責任外ですが、排水設備の不備が原因であれば賠償請求できる場合があります。</p><h2>トラブル⑦〜⑩</h2><p>近隣住民からの苦情（深夜のエンジン音等）、駐車場の照明が壊れて暗い、契約時と異なるサイズ制限が適用された、解約後も請求が続く、といったトラブルはいずれも「書面での記録」と「管理会社への速やかな連絡」が解決の基本です。</p>`
+  },
+  {
+    id: 9, category: '地域別', tag: '#相場',
+    title: '東京23区・駐車場相場ランキング2026年版',
+    summary: 'ParkLinkのデータをもとに、東京23区の月極駐車場平均月額をランキング形式で紹介します。',
+    date: '2026-05-11', readTime: '4分',
+    content: `<h2>東京23区の相場を徹底比較</h2><p>ParkLinkに掲載されている5,700件以上のデータをもとに、区ごとの平均月額を集計しました。エリア選びの参考にしてください。</p><h2>高い区トップ5</h2><p>1位：港区（平均約55,000円）六本木・赤坂・麻布エリアを抱え、都内最高水準。外資系企業や富裕層向け物件が多く、機械式でも高額。</p><p>2位：千代田区（平均約48,000円）丸の内・大手町・神保町など都心中枢。オフィスビル付帯の駐車場が多く平均を押し上げています。</p><p>3位：渋谷区（平均約42,000円）表参道・恵比寿・代官山エリアが牽引。若者文化と高級住宅地が混在するため価格帯に幅があります。</p><p>4位：新宿区（平均約38,000円）新宿駅周辺は特に高く、西新宿のオフィスエリアも高水準。一方、早稲田・落合エリアは比較的安価です。</p><p>5位：中央区（平均約36,000円）銀座・築地・日本橋エリア。観光客も多く需要が安定しているため高値が続いています。</p><h2>安い区トップ5</h2><p>19位：足立区（平均約13,000円）、20位：葛飾区（平均約12,000円）、21位：江戸川区（平均約12,000円）、22位：練馬区（平均約11,000円）、23位：板橋区（平均約10,000円）。城東・城北エリアは都心より70〜80%安く、車通勤の多いエリアでも十分な供給があります。</p><h2>コスパの良いエリア</h2><p>都心へのアクセスが良く、かつ相場が低いのが墨田区・江東区・荒川区です。都心まで電車15〜20分圏内でありながら、月額15,000〜20,000円台の物件が多数存在します。</p>`
+  },
+  {
+    id: 10, category: '初心者向け', tag: '#審査',
+    title: 'はじめての月極駐車場審査で落ちないための5つのコツ',
+    summary: '月極駐車場にも審査があります。初めて申込む方が知っておくべき審査のポイントと通過率を上げる方法を解説します。',
+    date: '2026-05-12', readTime: '4分',
+    content: `<h2>月極駐車場にも審査がある</h2><p>「賃貸アパートと違って駐車場は審査が緩い」と思っている方も多いですが、実際には身分確認・車検証確認・支払い能力の確認が行われます。特に機械式駐車場や高額物件では審査が厳しくなる傾向があります。</p><h2>コツ① 車検証を事前に準備する</h2><p>申込時に車検証の提出を求められます。特に重要なのは全長・全幅・全高・重量の数値です。機械式駐車場の場合、この数値が制限を超えていると即却下になります。事前にスマホで写真を撮っておくとスムーズです。</p><h2>コツ② 希望開始日に余裕を持つ</h2><p>「来週から使いたい」という急な申込は審査・手続きが間に合わないことがあります。少なくとも2週間前、できれば1ヶ月前から動くと選択肢が広がります。</p><h2>コツ③ 支払い方法を事前に確認する</h2><p>口座振替・クレジットカード払いに対応しているか確認しましょう。現金払いのみの物件では、初回に数ヶ月分の前払いを求められることもあります。</p><h2>コツ④ 勤務先・住所を正確に記載する</h2><p>申込書の記載内容と身分証明書の情報が一致していることが重要です。転居直後の場合は旧住所の免許証と現住所の証明書（住民票等）を両方用意すると安心です。</p><h2>コツ⑤ 複数件に同時申込しない</h2><p>人気物件は複数人が同時申込するため、第一希望が審査中に第二希望も申込んでおく「仮押さえ」は有効です。ただし2件同時に契約してしまわないよう、進捗管理を丁寧に行いましょう。</p>`
+  },
+  {
+    id: 11, category: 'オーナー向け', tag: '#税金',
+    title: '駐車場オーナーが知っておくべき税金・確定申告の基礎知識',
+    summary: '駐車場収入は不動産所得として確定申告が必要です。経費の範囲・青色申告のメリット・注意点をわかりやすく解説します。',
+    date: '2026-05-12', readTime: '5分',
+    content: `<h2>駐車場収入は「不動産所得」</h2><p>月極駐車場の賃料収入は、税法上「不動産所得」に分類されます。給与所得と合算して確定申告が必要です。年間の不動産所得が20万円を超える場合は必ず申告が必要になります。</p><h2>経費として計上できるもの</h2><p>固定資産税・都市計画税、建物・設備の減価償却費、管理委託費（管理会社への手数料）、修繕費（舗装のひび割れ補修・ライン引き直し等）、ローン利息（土地取得のためのローン利息部分）、損害保険料、広告費（ポータルサイトへの掲載料等）が主な経費です。これらを適切に計上することで課税所得を大幅に圧縮できます。</p><h2>青色申告のメリット</h2><p>青色申告を選択すると、最大65万円の特別控除が受けられます。また赤字が出た場合に翌年以降3年間繰り越せる「損失の繰越控除」も利用できます。事前に税務署へ「青色申告承認申請書」を提出する必要があります。</p><h2>消費税の注意点</h2><p>駐車場収入は消費税の課税対象です（住宅の賃料は非課税ですが駐車場は課税）。年間売上が1,000万円を超えると消費税の課税事業者になります。インボイス制度への対応も必要になるため、売上規模が大きくなってきたら税理士への相談をおすすめします。</p><h2>ParkLinkのオーナー診断を活用</h2><p>ParkLinkのオーナー診断機能では、周辺相場との比較や収益シミュレーションを無料で確認できます。確定申告の前に収益の最適化を検討してみてください。</p>`
+  },
+];
+
+function renderColumnList() {
+  const el = document.getElementById('column_body');
+  const cats = [...new Set(ARTICLES.map(a=>a.category))];
+  el.innerHTML = `
+    <div style="margin-bottom:28px">
+      <div style="font-size:22px;font-weight:900;color:var(--t);margin-bottom:4px">駐車場コラム</div>
+      <div style="font-size:13px;color:var(--t2)">月極駐車場に関する知識・お役立ち情報</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px" id="cat_filters">
+      <button onclick="filterColumn(null,this)" style="padding:6px 16px;border-radius:20px;border:1.5px solid var(--t);background:var(--t);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">すべて</button>
+      ${cats.map(c=>`<button onclick="filterColumn('${c}',this)" style="padding:6px 16px;border-radius:20px;border:1.5px solid var(--b);background:#fff;color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">${c}</button>`).join('')}
+    </div>
+    <div id="article_list" style="display:flex;flex-direction:column;gap:14px">
+      ${ARTICLES.map(a=>articleCardHTML(a)).join('')}
+    </div>`;
+}
+
+function filterColumn(cat, btn) {
+  document.querySelectorAll('#cat_filters button').forEach(b=>{b.style.background='#fff';b.style.color='var(--t2)';b.style.borderColor='var(--b)';});
+  btn.style.background='var(--t)'; btn.style.color='#fff'; btn.style.borderColor='var(--t)';
+  document.getElementById('article_list').innerHTML = (cat?ARTICLES.filter(a=>a.category===cat):ARTICLES).map(a=>articleCardHTML(a)).join('');
+}
+
+function articleCardHTML(a) {
+  const icons = {基礎知識:'📚',契約:'📝',節約:'💰',知識:'🔧','オーナー向け':'🏠'};
+  const colors = {基礎知識:'#0d2b4e',契約:'#1a5c3a',節約:'#c9a84c',知識:'#7c3aed','オーナー向け':'#dc2626'};
+  const c = colors[a.category]||'var(--a)';
+  return `<div onclick="showArticle(${a.id})" style="background:#fff;border-radius:16px;padding:18px;cursor:pointer;border:1px solid var(--b);transition:all .15s;display:flex;gap:14px;align-items:flex-start" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+    <div style="width:52px;height:52px;background:${c}18;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${icons[a.category]||'📄'}</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;background:${c}18;color:${c}">${a.category}</span>
+        <span style="font-size:11px;color:var(--t3)">${a.date} · ${a.readTime}で読める</span>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--t);line-height:1.4;margin-bottom:5px">${a.title}</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.6">${a.summary}</div>
+      <div style="font-size:11px;color:var(--a);font-weight:600;margin-top:7px">続きを読む →</div>
+    </div>
+  </div>`;
+}
+
+function showArticle(id) {
+  const a = ARTICLES.find(x=>x.id===id);
+  if (!a) return;
+  currentArticleId = id;
+  const icons = {基礎知識:'📚',契約:'📝',節約:'💰',知識:'🔧','オーナー向け':'🏠'};
+  const el = document.getElementById('column_body');
+  el.innerHTML = `
+    <button onclick="renderColumnList()" style="display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--t2);font-size:13px;cursor:pointer;margin-bottom:20px;font-family:inherit;padding:0">← コラム一覧に戻る</button>
+    <div style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--b)">
+      <div style="background:linear-gradient(135deg,var(--a),var(--a2));padding:24px 24px 28px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:22px">${icons[a.category]||'📄'}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff">${a.category}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,.6)">${a.date} · ${a.readTime}</span>
+        </div>
+        <div style="font-size:19px;font-weight:900;color:#fff;line-height:1.4;margin-bottom:8px">${a.title}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">${a.summary}</div>
+      </div>
+      <div style="padding:24px;font-size:14px;color:var(--t);line-height:1.9" class="article-body">${a.content}</div>
+      <div style="padding:18px 24px;border-top:1px solid var(--b);background:var(--bg)">
+        <div style="font-size:12px;color:var(--t2);margin-bottom:12px">この記事が参考になったら、駐車場探しもParkLinkで</div>
+        <button onclick="switchTab('search')" style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">駐車場を探してみる →</button>
+      </div>
+    </div>
+    <div style="margin-top:24px">
+      <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:12px">関連記事</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${ARTICLES.filter(x=>x.id!==id).slice(0,3).map(x=>`
+          <div onclick="showArticle(${x.id})" style="background:#fff;border-radius:12px;padding:13px 16px;cursor:pointer;border:1px solid var(--b);display:flex;gap:12px;align-items:center" onmouseover="this.style.borderColor='var(--am)'" onmouseout="this.style.borderColor='var(--b)'">
+            <div style="font-size:20px;flex-shrink:0">${icons[x.category]||'📄'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:var(--t);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${x.title}</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:2px">${x.category} · ${x.readTime}</div>
+            </div>
+            <div style="font-size:12px;color:var(--a);flex-shrink:0">→</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  if (!document.getElementById('article_style')) {
+    const s = document.createElement('style');
+    s.id = 'article_style';
+    s.textContent = '.article-body h2{font-size:16px;font-weight:800;color:var(--a);margin:22px 0 10px;padding-bottom:8px;border-bottom:2px solid var(--al)}.article-body h3{font-size:14px;font-weight:700;color:var(--t);margin:14px 0 6px}.article-body p{margin-bottom:13px}';
+    document.head.appendChild(s);
+  }
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+// ============================================================
+// SORT
+// ============================================================
+function setSort(mode) {
+  state.sortMode = mode;
+  state.limit = 50;
+  document.querySelectorAll('.sort-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('sort_'+mode).classList.add('active');
+  renderList();
+}
+
+// ============================================================
+// SUGGESTIONS
+// ============================================================
+const SUGGEST_KEYWORDS = [
+  '新宿区','渋谷区','港区','千代田区','中央区','品川区','目黒区','世田谷区',
+  '大田区','文京区','台東区','墨田区','江東区','中野区','杉並区','豊島区',
+  '新宿','渋谷','池袋','秋葉原','神保町','九段下','銀座','六本木',
+  '恵比寿','代官山','三軒茶屋','吉祥寺','平置き','機械式','屋根あり','24時間'
+];
+
+function showSuggestions() {
+  const val = document.getElementById('q').value.trim();
+  const box = document.getElementById('suggest_box');
+  const filtered = val
+    ? SUGGEST_KEYWORDS.filter(k => k.includes(val) || toHiragana(k).includes(toHiragana(val))).slice(0,6)
+    : SUGGEST_KEYWORDS.slice(0,8);
+  if (filtered.length === 0) { box.style.display = 'none'; return; }
+  box.style.display = '';
+  box.innerHTML = `
+    <div style="padding:8px 4px 4px;display:flex;flex-wrap:wrap;gap:6px;padding:12px">
+      ${filtered.map(k=>`<button onclick="selectSuggest('${k}')"
+        style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--b);background:#fff;color:var(--t);font-size:13px;cursor:pointer;transition:all .15s"
+        onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='#fff'">
+        ${k}
+      </button>`).join('')}
+    </div>`;
+}
+
+function hideSuggestions() {
+  document.getElementById('suggest_box').style.display = 'none';
+}
+
+function selectSuggest(kw) {
+  document.getElementById('q').value = kw;
+  hideSuggestions();
+  state.query = kw;
+  state.aiRanking = null;
+  state.limit = 50;
+  renderList();
+  updateAdvice();
+  updatePriceRadar();
+}
+
+// ============================================================
+// PRICE RADAR
+// ============================================================
+function updatePriceRadar() {
+  const el = document.getElementById('price_radar');
+  if (!state.query && !state.userPos) { el.style.display = 'none'; return; }
+  const f = getFiltered().filter(p=>p.price>0);
+  if (f.length < 3) { el.style.display = 'none'; return; }
+  const prices = f.map(p=>p.price);
+  const avg = Math.round(prices.reduce((a,b)=>a+b,0)/prices.length);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const avail = f.filter(p=>p.available).length;
+  el.style.display = '';
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:16px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.8);white-space:nowrap">📊 価格レーダー</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        ${radarStat('最安値','¥'+min.toLocaleString())}
+        ${radarStat('平均','¥'+avg.toLocaleString())}
+        ${radarStat('最高値','¥'+max.toLocaleString())}
+        ${radarStat('空きあり',avail+'件')}
+      </div>
+    </div>`;
+}
+
+function radarStat(label, val) {
+  return `<div style="text-align:center">
+    <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:2px">${label}</div>
+    <div style="font-size:15px;font-weight:800;color:#fff">${val}</div>
+  </div>`;
+}
+
+// ============================================================
+// COUNT UP ANIMATION
+// ============================================================
+let _lastCount = 0;
+function animateCount(target) {
+  const el = document.getElementById('rcnt');
+  if (!el) return;
+  const start = _lastCount;
+  const diff = target - start;
+  if (Math.abs(diff) < 5) { el.textContent = target.toLocaleString()+'件'; _lastCount = target; return; }
+  let current = start;
+  const step = Math.ceil(Math.abs(diff) / 12);
+  const timer = setInterval(() => {
+    current += diff > 0 ? step : -step;
+    if ((diff > 0 && current >= target) || (diff < 0 && current <= target)) {
+      current = target; clearInterval(timer);
+    }
+    el.textContent = current.toLocaleString()+'件';
+  }, 30);
+  _lastCount = target;
+}
+
+// ============================================================
+// HIGHLIGHT
+// ============================================================
+function highlightText(text, query) {
+  if (!query || !text) return esc(text||'');
+  const tokens = tokenize(query).filter(t=>t.length>=2);
+  let result = esc(text);
+  tokens.forEach(t => {
+    const escaped = t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    result = result.replace(new RegExp(escaped,'gi'), m=>`<span class="hl">${m}</span>`);
+  });
+  return result;
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  ['list_view','owner_view','column_view','heatmap_view'].forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.style.display = (v === tab+'_view') ? '' : 'none';
+  });
+  ['search','owner','column','heatmap'].forEach(t => {
+    document.getElementById('tab_'+t)?.classList.toggle('active', t===tab);
+  });
+  document.getElementById('btn_back').style.display = 'none';
+  if (tab === 'owner') initOwnerCounseling();
+  if (tab === 'column') renderColumnList();
+  if (tab === 'heatmap') renderHeatmap();
+}
+
+// ============================================================
+// OWNER COUNSELING (カウンセリング形式)
+// ============================================================
+const COUNSELING_STEPS = [
+  {
+    id: 'slots',
+    q: '駐車場は何台分お持ちですか？',
+    sub: 'すべての台数を教えてください',
+    type: 'choice',
+    choices: [
+      { label: '1台', value: '1台', icon: '🚗' },
+      { label: '2〜5台', value: '2〜5台', icon: '🚗🚗' },
+      { label: '6〜10台', value: '6〜10台', icon: '🏢' },
+      { label: '11台以上', value: '11台以上', icon: '🏗' },
+    ]
+  },
+  {
+    id: 'status',
+    q: '現在の状況を教えてください',
+    sub: '一番近いものを選んでください',
+    type: 'choice',
+    choices: [
+      { label: '空きがある', value: '空きあり', icon: '📭', desc: '今すぐ入居者を募集したい' },
+      { label: '満車', value: '満車', icon: '✅', desc: '現在は満車だが相場を知りたい' },
+      { label: 'これから貸したい', value: '新規', icon: '🆕', desc: '新たに駐車場を始めたい' },
+      { label: '管理が大変', value: '管理課題', icon: '😓', desc: 'DX化・効率化を検討中' },
+    ]
+  },
+  {
+    id: 'concern',
+    q: '一番困っていることは何ですか？',
+    sub: '複数ある場合は最も優先度の高いものを',
+    type: 'choice',
+    choices: [
+      { label: '空きが埋まらない', value: '空き率', icon: '📉', desc: '入居者がなかなか決まらない' },
+      { label: '相場がわからない', value: '相場不明', icon: '❓', desc: '適正な月額を知りたい' },
+      { label: '管理が手間', value: '管理工数', icon: '📋', desc: '集金・更新手続きが大変' },
+      { label: '契約手続きが面倒', value: '契約DX', icon: '📝', desc: '電子化・オンライン化したい' },
+    ]
+  },
+  {
+    id: 'area',
+    q: '駐車場のエリアを教えてください',
+    sub: '住所・駅名・地域名など大まかで構いません',
+    type: 'input',
+    placeholder: '例：新宿区、渋谷駅周辺、世田谷区三軒茶屋 など',
+    inputId: 'owner_addr_new'
+  },
+  {
+    id: 'price',
+    q: '現在の月額賃料はいくらですか？（任意）',
+    sub: '未設定・わからない場合はスキップできます',
+    type: 'input_optional',
+    placeholder: '例：25000（円単位で入力）',
+    inputId: 'owner_price_new',
+    skipLabel: 'わからない・未設定'
+  },
+];
+
+let counselingAnswers = {};
+let counselingStep = 0;
+
+function initOwnerCounseling() {
+  counselingAnswers = {};
+  counselingStep = 0;
+  renderCounselingStep();
+}
+
+function renderCounselingStep() {
+  const el = document.getElementById('owner_counseling');
+  const step = COUNSELING_STEPS[counselingStep];
+  const total = COUNSELING_STEPS.length;
+  const progress = Math.round((counselingStep / total) * 100);
+
+  // ヘッダー（初回のみ）
+  const headerHTML = counselingStep === 0 ? `
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:56px;height:56px;background:var(--a);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px;font-weight:900;color:#fff">P</div>
+      <div style="font-size:20px;font-weight:900;color:var(--t);margin-bottom:6px">オーナー無料カウンセリング</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">いくつかの質問に答えるだけで<br>AIがあなたの駐車場を無料診断します</div>
+    </div>` : '';
+
+  el.innerHTML = `
+    ${headerHTML}
+    <!-- プログレスバー -->
+    <div style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--t3)">STEP ${counselingStep+1} / ${total}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--a)">${progress}% 完了</div>
+      </div>
+      <div style="height:4px;background:var(--b);border-radius:4px;overflow:hidden">
+        <div style="height:100%;background:var(--a);border-radius:4px;width:${progress}%;transition:width .4s ease"></div>
+      </div>
+    </div>
+
+    <!-- 質問カード -->
+    <div class="fadeUp" style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 24px rgba(13,43,78,.08);border:1px solid var(--b);margin-bottom:16px">
+      <!-- 回答済みの答えを表示 -->
+      ${counselingStep > 0 ? `
+      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--b)">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${Object.entries(counselingAnswers).map(([k,v])=>`
+            <div style="display:flex;align-items:center;gap:6px;background:var(--al);border-radius:20px;padding:5px 12px">
+              <div style="font-size:11px;color:var(--t3)">${COUNSELING_STEPS.find(s=>s.id===k)?.q.slice(0,10)}...</div>
+              <div style="font-size:12px;font-weight:700;color:var(--a)">${v}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <div style="font-size:18px;font-weight:800;color:var(--t);margin-bottom:4px;line-height:1.4">${step.q}</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:20px">${step.sub}</div>
+
+      ${step.type === 'choice' ? `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${step.choices.map(c=>`
+          <button onclick="selectCounseling('${step.id}','${c.value}')"
+            style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:1.5px solid var(--b);background:#fff;text-align:left;cursor:pointer;transition:all .15s;font-family:inherit;width:100%"
+            onmouseover="this.style.borderColor='var(--a)';this.style.background='var(--al)'"
+            onmouseout="this.style.borderColor='var(--b)';this.style.background='#fff'">
+            <div style="font-size:24px;flex-shrink:0">${c.icon}</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--t)">${c.label}</div>
+              ${c.desc?`<div style="font-size:11px;color:var(--t3);margin-top:2px">${c.desc}</div>`:''}
+            </div>
+            <div style="margin-left:auto;font-size:16px;color:var(--t3)">→</div>
+          </button>`).join('')}
+      </div>` : ''}
+
+      ${step.type === 'input' ? `
+      <div>
+        <input id="${step.inputId}" type="text" placeholder="${step.placeholder}"
+          style="width:100%;border:1.5px solid var(--b);border-radius:12px;padding:14px 16px;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'"
+          onkeydown="if(event.key==='Enter')submitCounselingInput('${step.id}','${step.inputId}')">
+        <button onclick="submitCounselingInput('${step.id}','${step.inputId}')"
+          style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+          次へ →
+        </button>
+      </div>` : ''}
+
+      ${step.type === 'input_optional' ? `
+      <div>
+        <input id="${step.inputId}" type="number" placeholder="${step.placeholder}"
+          style="width:100%;border:1.5px solid var(--b);border-radius:12px;padding:14px 16px;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'"
+          onkeydown="if(event.key==='Enter')submitCounselingInput('${step.id}','${step.inputId}')">
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button onclick="skipCounselingStep('${step.id}')"
+            style="flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--b);background:#fff;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit">
+            ${step.skipLabel}
+          </button>
+          <button onclick="submitCounselingInput('${step.id}','${step.inputId}')"
+            style="flex:2;padding:13px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+            次へ →
+          </button>
+        </div>
+      </div>` : ''}
+    </div>
+
+    ${counselingStep > 0 ? `<button onclick="backCounselingStep()" style="background:transparent;border:none;color:var(--t3);font-size:12px;cursor:pointer;font-family:inherit">← 前の質問に戻る</button>` : ''}`;
+}
+
+function selectCounseling(id, value) {
+  counselingAnswers[id] = value;
+  counselingStep++;
+  if (counselingStep >= COUNSELING_STEPS.length) {
+    runCounselingDiagnosis();
+  } else {
+    renderCounselingStep();
+  }
+}
+
+function submitCounselingInput(id, inputId) {
+  const val = document.getElementById(inputId)?.value.trim();
+  if (!val) { showToast('⚠ 入力してください'); return; }
+  counselingAnswers[id] = val;
+  counselingStep++;
+  if (counselingStep >= COUNSELING_STEPS.length) {
+    runCounselingDiagnosis();
+  } else {
+    renderCounselingStep();
+  }
+}
+
+function skipCounselingStep(id) {
+  counselingAnswers[id] = '未回答';
+  counselingStep++;
+  if (counselingStep >= COUNSELING_STEPS.length) {
+    runCounselingDiagnosis();
+  } else {
+    renderCounselingStep();
+  }
+}
+
+function backCounselingStep() {
+  if (counselingStep > 0) {
+    const prevStep = COUNSELING_STEPS[counselingStep - 1];
+    delete counselingAnswers[prevStep.id];
+    counselingStep--;
+    renderCounselingStep();
+  }
+}
+
+async function runCounselingDiagnosis() {
+  const el = document.getElementById('owner_counseling');
+  el.innerHTML = `
+    <div style="text-align:center;padding:60px 20px">
+      <div style="width:56px;height:56px;border:4px solid var(--al);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px"></div>
+      <div style="font-size:16px;font-weight:700;color:var(--t);margin-bottom:8px">AIが診断中です...</div>
+      <div style="font-size:13px;color:var(--t2)">回答内容をもとに周辺データを分析しています</div>
+    </div>`;
+
+  const addr = counselingAnswers.area || '';
+  const currentPrice = counselingAnswers.price !== '未回答' ? parseInt(counselingAnswers.price) || 0 : 0;
+  const nearby = getNearbyData(addr, '', '');
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `あなたは月極駐車場の専門コンサルタントです。オーナーへの診断結果をJSONで返してください（マークダウン不要）:
+{"avgPrice":周辺平均月額,"recommendedPrice":推奨月額,"demand":"高い/普通/低い","comment":"カウンセリング回答を踏まえた総合アドバイス（80字以内）","tips":["具体的アドバイス1(30字以内)","具体的アドバイス2(30字以内)","具体的アドバイス3(30字以内)"],"urgency":"高/中/低"}`,
+        messages: [{ role: 'user', content:
+          `台数:${counselingAnswers.slots} 状況:${counselingAnswers.status} 課題:${counselingAnswers.concern} エリア:${addr} 現在月額:${currentPrice||'未設定'}円\n周辺${nearby.count}件 平均¥${nearby.avg.toLocaleString()} 空き率${nearby.availRate}%`
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content[0].text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(text);
+    renderCounselingResult(result, nearby, currentPrice);
+  } catch(e) {
+    renderCounselingResult(null, nearby, currentPrice);
+  }
+}
+
+function renderCounselingResult(result, nearby, currentPrice) {
+  const el = document.getElementById('owner_counseling');
+  const r = result || {};
+  const avgP = r.avgPrice || nearby.avg;
+  const recP = r.recommendedPrice || nearby.avg;
+  const demandColor = r.demand==='高い'?'#1a5c3a':r.demand==='低い'?'#e05050':'#c9a84c';
+  const demandBg = r.demand==='高い'?'#e8f5ee':r.demand==='低い'?'#fef0f0':'#fff8e8';
+  const urgencyColor = r.urgency==='高'?'#e05050':r.urgency==='中'?'#c9a84c':'#1a5c3a';
+
+  // 現在価格との比較
+  const priceDiff = currentPrice > 0 ? recP - currentPrice : null;
+  const yearDiff = priceDiff ? priceDiff * 12 : null;
+
+  el.innerHTML = `
+    <!-- 完了バナー -->
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:20px;padding:20px 24px;margin-bottom:20px;text-align:center">
+      <div style="font-size:24px;margin-bottom:8px">✅</div>
+      <div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px">診断が完了しました</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7)">${counselingAnswers.area||'入力エリア'}周辺 ${nearby.count}件のデータをもとに分析</div>
+    </div>
+
+    <!-- 回答サマリー -->
+    <div style="background:#fff;border-radius:16px;padding:18px 20px;border:1px solid var(--b);margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">カウンセリング回答</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${Object.entries(counselingAnswers).filter(([k])=>k!=='price'&&k!=='area').map(([k,v])=>`
+          <div style="background:var(--bg);border-radius:10px;padding:10px 12px">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:3px">${COUNSELING_STEPS.find(s=>s.id===k)?.q.slice(0,12)}...</div>
+            <div style="font-size:13px;font-weight:700;color:var(--t)">${v}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 診断結果 -->
+    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--b);margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:800;color:var(--t);flex:1">AI診断結果</div>
+        ${r.demand?`<span style="background:${demandBg};color:${demandColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px">需要：${r.demand}</span>`:''}
+        ${r.urgency?`<span style="background:${urgencyColor}15;color:${urgencyColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px">優先度：${r.urgency}</span>`:''}
+      </div>
+
+      <!-- 価格比較 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg);border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">周辺平均月額</div>
+          <div style="font-size:22px;font-weight:900;color:var(--t2)">¥${avgP.toLocaleString()}</div>
+        </div>
+        <div style="background:var(--al);border-radius:12px;padding:14px;text-align:center;border:1.5px solid var(--am)">
+          <div style="font-size:10px;color:var(--a);font-weight:700;margin-bottom:4px">AI推奨月額</div>
+          <div style="font-size:22px;font-weight:900;color:var(--a)">¥${recP.toLocaleString()}</div>
+        </div>
+      </div>
+
+      ${priceDiff !== null ? `
+      <div style="background:${priceDiff>0?'#fff8e8':'#e8f5ee'};border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;color:${priceDiff>0?'#7a5900':'#1a5c3a'};font-weight:700">
+          現在より月${priceDiff>0?'▲':'▼'}¥${Math.abs(priceDiff).toLocaleString()}
+        </div>
+        <div style="font-size:14px;font-weight:900;color:${priceDiff>0?'#c9a84c':'#1a5c3a'}">
+          年間${priceDiff>0?'+':''}¥${Math.abs(yearDiff).toLocaleString()}
+        </div>
+      </div>` : ''}
+
+      ${r.comment?`
+      <div style="background:linear-gradient(135deg,var(--al),#dde4f0);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--a);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">AIコメント</div>
+        <div style="font-size:13px;color:var(--t);line-height:1.7">${r.comment}</div>
+      </div>`:''}
+
+      ${r.tips&&r.tips.length?`
+      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:10px">具体的なアドバイス</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${r.tips.map((tip,i)=>`
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;background:var(--bg);border-radius:10px">
+            <span style="background:var(--a);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0">0${i+1}</span>
+            <span style="font-size:13px;color:var(--t);line-height:1.5">${tip}</span>
+          </div>`).join('')}
+      </div>`:''}
+    </div>
+
+    <!-- CTA -->
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:18px;padding:22px 20px;text-align:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">無料でオーナー登録する</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:16px">掲載・管理・電子契約まで一気通貫で対応します</div>
+      <button style="background:var(--gold);border:none;border-radius:12px;padding:13px 32px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        今すぐ登録する →
+      </button>
+    </div>
+
+    <button onclick="initOwnerCounseling()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--b);background:#fff;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit">
+      もう一度診断する
+    </button>`;
+}
+
+// switchTabのowner切り替えを更新
+function useOwnerLocation() {
+  if (!navigator.geolocation) { alert('位置情報が利用できません'); return; }
+  const btn = event.target;
+  btn.textContent = '取得中...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    btn.textContent = '現在地';
+    state._ownerLat = pos.coords.latitude;
+    state._ownerLng = pos.coords.longitude;
+    const inputEl = document.getElementById('owner_addr_new');
+    if (inputEl) inputEl.value = '現在地周辺';
+  }, () => { btn.textContent = '現在地'; });
+}
+
+// 旧関数との互換性
+function runOwnerDiagnosis() {}
+function diagnosis_btn() {}
+
+
+
+async function runOwnerDiagnosis() {
+  const addr = document.getElementById('owner_addr').value.trim();
+  if (!addr) { alert('住所・エリアを入力してください'); return; }
+  const size = document.getElementById('owner_size').value;
+  const type = document.getElementById('owner_type').value;
+
+  const btn = document.getElementById('diagnosis_btn');
+  btn.textContent = '⏳ 診断中...'; btn.disabled = true;
+
+  const nearby = getNearbyData(addr, size, type);
+  const resultEl = document.getElementById('owner_result');
+  resultEl.style.display = '';
+  resultEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--t2)">
+    <div style="font-size:32px;margin-bottom:12px">⏳</div>
+    <div style="font-weight:600">AIが診断中です...</div>
+  </div>`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `あなたは月極駐車場の専門家です。オーナーに対して駐車場の空き枠診断を行ってください。
+JSONのみで回答してください（マークダウン不要）:
+{"avgPrice":周辺平均月額,"minPrice":最安値,"maxPrice":最高値,"count":周辺件数,"availRate":空き率,"recommendedPrice":推奨月額,"demand":"高い/普通/低い","comment":"オーナーへの総合コメント60字以内","tips":["アドバイス1(30字以内)","アドバイス2(30字以内)","アドバイス3(30字以内)"]}`,
+        messages: [{ role: 'user', content: `住所: ${addr}\n車種: ${size||'未定'}\nタイプ: ${type||'未定'}\n周辺${nearby.count}件 平均¥${nearby.avg.toLocaleString()} 空き率${nearby.availRate}% 主な駅:${nearby.stations.join('・')}` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content[0].text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(text);
+    renderOwnerResult(addr, result, nearby);
+  } catch(e) {
+    renderOwnerResult(addr, null, nearby);
+  }
+  btn.textContent = '✨ AI診断スタート'; btn.disabled = false;
+}
+
+function getNearbyData(addr, size, type) {
+  const tokens = tokenize(addr);
+  let candidates = state.properties.filter(p => {
+    const target = p.address + p.ward + p.station;
+    return tokens.some(t => t.length >= 2 && target.includes(t));
+  });
+  if (size) candidates = candidates.filter(p => !p.size || p.size === size);
+  if (type) candidates = candidates.filter(p => !p.type || p.type === type);
+  if (candidates.length < 5) candidates = state.properties.filter(p => p.price > 0).slice(0, 100);
+  const priced = candidates.filter(p => p.price > 0);
+  const prices = priced.map(p => p.price);
+  const avail = candidates.filter(p => p.available).length;
+  const stations = [...new Set(candidates.map(p=>p.station).filter(Boolean))].slice(0,3);
+  return {
+    count: candidates.length,
+    avg: prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
+    min: prices.length ? Math.min(...prices) : 0,
+    max: prices.length ? Math.max(...prices) : 0,
+    avail, availRate: candidates.length ? Math.round(avail/candidates.length*100) : 0,
+    stations,
+  };
+}
+
+function renderOwnerResult(addr, result, nearby) {
+  const el = document.getElementById('owner_result');
+  const r = result || {};
+  const demandColor = r.demand==='高い'?'#1a5c3a':r.demand==='低い'?'#e05050':'#c9a84c';
+  const demandBg = r.demand==='高い'?'#e8f5ee':r.demand==='低い'?'#fef0f0':'#fff8e8';
+
+  el.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(13,43,78,.08);border:1px solid var(--b);margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h3 style="font-size:18px;font-weight:800;color:var(--t);flex:1">📊 診断結果</h3>
+        ${r.demand?`<span style="background:${demandBg};color:${demandColor};font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px">需要：${r.demand}</span>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
+        ${statCard('周辺平均月額','¥'+(r.avgPrice||nearby.avg).toLocaleString(),'周辺相場')}
+        ${statCard('推奨月額','¥'+(r.recommendedPrice||nearby.avg).toLocaleString(),'AI推奨価格')}
+        ${statCard('周辺物件数',(r.count||nearby.count)+'件','半径2km以内')}
+        ${statCard('空き率',(r.availRate||nearby.availRate)+'%','現在の需給')}
+      </div>
+      ${r.comment?`<div style="background:linear-gradient(135deg,#e8edf5,#dde4f0);border-radius:14px;padding:16px 18px;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--a);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">✨ AIコメント</div>
+        <div style="font-size:14px;color:var(--t);line-height:1.7">${r.comment}</div>
+      </div>`:''}
+      ${r.tips&&r.tips.length?`<div>
+        <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:12px">💡 改善アドバイス</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${r.tips.map((tip,i)=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg);border-radius:12px">
+            <span style="background:var(--a);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0">0${i+1}</span>
+            <span style="font-size:13px;color:var(--t);line-height:1.5">${tip}</span>
+          </div>`).join('')}
+        </div>
+      </div>`:''}
+    </div>
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:20px;padding:24px;text-align:center">
+      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:6px">オーナー登録で詳細診断・契約サポートが受けられます</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:16px">専門スタッフがサポートします</div>
+      <button style="background:var(--gold);border:none;border-radius:12px;padding:13px 32px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">📝 無料でオーナー登録する</button>
+    </div>`;
+}
+
+function statCard(label, value, sub) {
+  return `<div style="background:var(--bg);border-radius:12px;padding:14px 16px;text-align:center">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${label}</div>
+    <div style="font-size:20px;font-weight:800;color:var(--a);letter-spacing:-.5px">${value}</div>
+    <div style="font-size:10px;color:var(--t3);margin-top:2px">${sub}</div>
+  </div>`;
+}
 
 function renderList() {
   let filtered = getFiltered();
@@ -1114,13 +2376,29 @@ function renderList() {
     filtered = [...ranked, ...rest];
   }
 
-  document.getElementById('rcnt').textContent = filtered.length.toLocaleString() + '件';
+  const countNum = filtered.length;
+  animateCount(countNum);
+  document.getElementById('rcnt').style.color = 'rgba(255,255,255,.8)';
+  updatePriceRadar();
+  renderFeatured();
   const visible = filtered.slice(0, state.limit);
   const list = document.getElementById('prop_list');
   const isLoadMore = state._isLoadMore;
   state._isLoadMore = false;
   if (visible.length === 0) {
-    list.innerHTML = '<div class="empty"><div>🅿</div><div class="et">条件に合う物件が見つかりませんでした</div><div class="es">条件を変えてお試しください</div></div>';
+    // 近隣フォールバック
+    const fallback = state.properties.filter(p=>p.available).slice(0,6);
+    list.innerHTML = `
+      <div class="empty">
+        <div>🔍</div>
+        <div class="et">「${state.query}」の条件に合う物件が見つかりませんでした</div>
+        <div class="es">条件を変えるか、近隣のおすすめ物件をご覧ください</div>
+      </div>
+      ${fallback.length>0?`
+      <div style="margin-top:24px">
+        <div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:14px">📍 近隣のおすすめ物件</div>
+        <div class="prop-grid">${fallback.map(p=>propCardHTML(p,-1)).join('')}</div>
+      </div>`:''}`;
   } else {
     list.innerHTML = visible.map((p,i) => propCardHTML(p, isLoadMore ? i : -1)).join('');
   }
@@ -1160,15 +2438,16 @@ function propCardHTML(p, i) {
 
   return `
   <div class="prop-card fadeUp" style="${animStyle}" onclick="showDetail(${p.id})">
-    <div class="prop-thumb${p.available?'':' na'}" style="position:relative">
-      🅿
+    <div class="prop-thumb${p.available?'':' na'}" style="position:relative;background:${p.available?'linear-gradient(135deg,var(--al),#dde6f5)':'linear-gradient(135deg,#f0f0f0,#e0e0e0)'}">
+      ${parkingIcon(p.type)}
+      <button class="fav-btn ${isFav(p.id)?'on':''}" data-id="${p.id}" onclick="toggleFav(${p.id}, event)">${isFav(p.id)?'♥':'♡'}</button>
       ${rankBadge}
       ${availBadge}
     </div>
     <div class="prop-body">
       ${reasonBadge}
-      <div class="prop-title">${esc(p.name)}</div>
-      <div class="prop-meta">${p.station?esc(p.station)+'駅 徒歩'+p.walk+'分':esc(p.address.slice(0,26))}${p.ward?' · '+p.ward:''}</div>
+      <div class="prop-title">${highlightText(p.name, state.query)}</div>
+      <div class="prop-meta">${p.station?highlightText(p.station, state.query)+'駅 徒歩'+p.walk+'分':esc(p.address.slice(0,26))}${p.ward?' · '+highlightText(p.ward, state.query):''}</div>
       <div class="prop-tags">
         ${p.size?`<span class="tag size">🚗 ${p.size}まで</span>`:''}
         ${distTag}
@@ -1202,37 +2481,216 @@ function showDetail(id) {
   if (!p) return;
   state.selectedProp = p;
   document.getElementById('list_view').style.display = 'none';
+  document.getElementById('owner_view').style.display = 'none';
   document.getElementById('btn_back').style.display = '';
+  document.getElementById('hdr_tabs').style.display = 'none';
+
   const mapUrl = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.address);
+  const shareUrl = `${location.origin}${location.pathname}?q=${encodeURIComponent(p.name)}`;
+  const lineUrl = 'https://line.me/R/share?text='+encodeURIComponent(`【月極駐車場】${p.name}\n${p.address}\n${p.price>0?'月額¥'+p.price.toLocaleString():'要問合せ'}\n${p.station?p.station+'駅 徒歩'+p.walk+'分':''}\n${shareUrl}`);
   const priceHTML = p.price > 0 ? `¥${p.price.toLocaleString()}` : '要問合せ';
-  const distHTML = p.dist != null ? `<div style="background:#f0f4ff;border-radius:9px;padding:9px 13px;margin-bottom:14px;font-size:13px;color:#1a4a8a;font-weight:600">📍 現在地から約${p.dist>=1000?(p.dist/1000).toFixed(1)+'km':p.dist+'m'}</div>` : '';
+  const distHTML = p.dist != null ? `<div style="background:var(--al);border-radius:9px;padding:9px 13px;margin-bottom:14px;font-size:13px;color:var(--a);font-weight:600">現在地から約${p.dist>=1000?(p.dist/1000).toFixed(1)+'km':p.dist+'m'}</div>` : '';
+
+  // 近隣類似物件（同じ区・同価格帯）
+  const similar = state.properties.filter(q =>
+    q.id !== p.id && q.ward === p.ward && q.available &&
+    (p.price === 0 || (q.price > p.price*0.7 && q.price < p.price*1.4))
+  ).slice(0, 3);
+
+  // 同駅の相場比較
+  const stationProps = state.properties.filter(q => q.station === p.station && q.price > 0);
+  const stationAvg = stationProps.length ? Math.round(stationProps.reduce((a,b)=>a+b.price,0)/stationProps.length) : 0;
+  const priceVsAvg = stationAvg && p.price > 0 ? p.price - stationAvg : null;
+  const priceRadarHTML = stationAvg && p.price > 0 ? `
+    <div style="background:var(--bg);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">${p.station}駅周辺の相場比較</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:3px">この物件</div>
+          <div style="font-size:20px;font-weight:800;color:var(--a)">¥${p.price.toLocaleString()}</div>
+        </div>
+        <div style="font-size:18px;color:var(--t3)">vs</div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:3px">駅周辺平均（${stationProps.length}件）</div>
+          <div style="font-size:20px;font-weight:800;color:var(--t2)">¥${stationAvg.toLocaleString()}</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:3px">差額</div>
+          <div style="font-size:18px;font-weight:800;color:${priceVsAvg<=0?'#1a5c3a':'#e05050'}">${priceVsAvg<=0?'▼':'▲'}¥${Math.abs(priceVsAvg).toLocaleString()}</div>
+          <div style="font-size:10px;color:${priceVsAvg<=0?'#1a5c3a':'#e05050'}">${priceVsAvg<=0?'相場より安い':'相場より高い'}</div>
+        </div>
+      </div>
+    </div>` : '';
+
+  // 近隣比較：少し離れると安い物件
+  const cheaper = p.price > 0 ? state.properties.filter(q =>
+    q.id !== p.id && q.available && q.price > 0 &&
+    q.price < p.price * 0.85 &&
+    q.station && q.station !== p.station &&
+    (q.ward === p.ward || similar.some(s => s.ward === q.ward))
+  ).sort((a,b) => a.price - b.price).slice(0, 1)[0] : null;
+
+  // 近隣比較：もっと好条件（駅近・屋根付き等）
+  const better = p.price > 0 ? state.properties.filter(q =>
+    q.id !== p.id && q.available && q.price > 0 &&
+    q.price > p.price * 1.1 && q.price < p.price * 1.5 &&
+    q.station && q.ward === p.ward &&
+    ((q.roof && !p.roof) || (q.walk > 0 && p.walk > 0 && q.walk < p.walk) || q.h24)
+  ).sort((a,b) => a.price - b.price).slice(0, 1)[0] : null;
+
+  const comparisonHTML = (cheaper || better) && p.price > 0 ? `
+    <div style="background:var(--bg);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">エリア別コスト比較</div>
+
+      <!-- この物件 -->
+      <div style="background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:2px solid var(--a)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--a);margin-bottom:2px">この物件</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t)">${esc(p.station||p.ward)}周辺</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:20px;font-weight:900;color:var(--a)">¥${p.price.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--t3)">年間 ¥${(p.price*12).toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
+      ${cheaper ? (() => {
+        const diff = p.price - cheaper.price;
+        const yearSave = diff * 12;
+        return `
+      <!-- 安い選択肢 -->
+      <div onclick="showDetail(${cheaper.id})" style="background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1.5px solid #b8e0c8;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(26,92,58,.12)'" onmouseout="this.style.boxShadow='none'">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#1a5c3a;margin-bottom:2px">💚 少し離れると</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t)">${esc(cheaper.station||cheaper.ward)}周辺</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${cheaper.walk?'徒歩'+cheaper.walk+'分':''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:20px;font-weight:900;color:#1a5c3a">¥${cheaper.price.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--t3)">年間 ¥${(cheaper.price*12).toLocaleString()}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e8f5ee;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12px;color:#1a5c3a;font-weight:700">月▼¥${diff.toLocaleString()} お得</div>
+          <div style="background:#e8f5ee;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;color:#1a5c3a">年間 ¥${yearSave.toLocaleString()} 節約</div>
+        </div>
+      </div>`;})() : ''}
+
+      ${better ? (() => {
+        const diff = better.price - p.price;
+        const yearAdd = diff * 12;
+        const betterPoints = [];
+        if (better.roof && !p.roof) betterPoints.push('屋根付き');
+        if (better.walk > 0 && p.walk > 0 && better.walk < p.walk) betterPoints.push('駅近'+better.walk+'分');
+        if (better.h24 && !p.h24) betterPoints.push('24h対応');
+        return `
+      <!-- 好条件の選択肢 -->
+      <div onclick="showDetail(${better.id})" style="background:#fff;border-radius:10px;padding:12px 14px;border:1.5px solid var(--am);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(13,43,78,.10)'" onmouseout="this.style.boxShadow='none'">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--a);margin-bottom:2px">⬆ もっと好条件</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t)">${esc(better.station||better.ward)}周辺</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${betterPoints.join(' · ')}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:20px;font-weight:900;color:var(--a)">¥${better.price.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--t3)">年間 ¥${(better.price*12).toLocaleString()}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12px;color:var(--t2);font-weight:700">月▲¥${diff.toLocaleString()} 増</div>
+          <div style="background:var(--al);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;color:var(--a)">年間 +¥${yearAdd.toLocaleString()}</div>
+        </div>
+      </div>`; })() : ''}
+    </div>` : '';
+
+  // 近隣物件HTML
+  const similarHTML = similar.length > 0 ? `
+    <div style="margin-top:28px;padding-top:24px;border-top:1px solid var(--b)">
+      <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">${p.ward}の近隣物件</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${similar.map(q=>`
+          <div onclick="showDetail(${q.id})" style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--b);border-radius:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--am)'" onmouseout="this.style.borderColor='var(--b)'">
+            <div style="width:44px;height:44px;background:var(--al);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🅿</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(q.name)}</div>
+              <div style="font-size:11px;color:var(--t2)">${q.station?q.station+'駅 徒歩'+q.walk+'分':esc(q.address.slice(0,20))}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:14px;font-weight:700;color:var(--a)">${q.price>0?'¥'+q.price.toLocaleString():'要問合せ'}</div>
+              <div style="font-size:10px;color:var(--t3)">/ 月</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
   document.getElementById('detail_view').innerHTML = `
   <div class="detail-card fadeUp">
     <div class="detail-hero${p.available?'':' na'}">
       🅿
-      <span class="detail-status" style="background:${p.available?'var(--a)':'#9a9690'}">${p.available?'● 空きあり':'○ 満車'}</span>
+      <span class="detail-status" style="background:${p.available?'var(--a)':'#9a9690'}">${p.available?'空きあり':'満車'}</span>
     </div>
     <div style="padding:22px">
       <div style="font-size:21px;font-weight:900;margin-bottom:4px;letter-spacing:-.3px">${esc(p.name)}</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:16px">
         <a href="${mapUrl}" target="_blank" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
-          📍 ${esc(p.address)}
-          <span style="font-size:11px;color:var(--a);font-weight:600;border:1px solid var(--a);border-radius:4px;padding:1px 6px">地図▶</span>
+          ${esc(p.address)}
+          <span style="font-size:11px;color:var(--a);font-weight:600;border:1px solid var(--a);border-radius:4px;padding:1px 6px">地図</span>
         </a>
       </div>
       <div class="info-grid">
-        ${[['最寄駅',p.station?p.station+'駅':'—'],['徒歩',p.walk?p.walk+'分':'—'],['月額',priceHTML],['車のサイズ',p.size||'普通車まで'],['タイプ',p.type||'—'],['情報源',p.source||'—']].map(([l,v])=>`<div class="info-cell"><div class="info-label">${l}</div><div class="info-value">${esc(String(v))}</div></div>`).join('')}
+        ${[['最寄駅',p.station?p.station+'駅':'—'],['徒歩',p.walk?p.walk+'分':'—'],['月額',priceHTML],['車のサイズ',p.size||'普通車まで'],['タイプ',p.type||'—'],['屋根',p.roof?'あり':'なし']].map(([l,v])=>`<div class="info-cell"><div class="info-label">${l}</div><div class="info-value">${esc(String(v))}</div></div>`).join('')}
       </div>
       ${distHTML}
-      <a href="${mapUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;background:#f0f7ff;border:1.5px solid #bcd5f5;border-radius:12px;padding:13px 16px;margin-bottom:16px;text-decoration:none;color:#1a4a8a;font-size:13px;font-weight:600">
-        <span style="font-size:20px">🗺</span>
+      ${priceRadarHTML}
+      ${comparisonHTML}
+      <a href="${mapUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;background:var(--al);border:1.5px solid var(--am);border-radius:12px;padding:13px 16px;margin-bottom:12px;text-decoration:none;color:var(--a);font-size:13px;font-weight:600">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
         <span>Google マップで場所を確認する</span>
-        <span style="margin-left:auto;font-size:16px">→</span>
+        <span style="margin-left:auto">→</span>
       </a>
+
+      <!-- 早期契約への流れ -->
+      <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:14px;padding:16px 18px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:800;color:#fff">最短1営業日で契約できます</div>
+          <div style="background:var(--gold);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#fff">FAST TRACK</div>
+        </div>
+        <div style="display:flex;gap:0;align-items:flex-start">
+          ${[
+            ['STEP 1','問い合わせ','フォームから送信'],
+            ['STEP 2','AI自動確認','空き・条件を自動照合'],
+            ['STEP 3','電子署名','オンラインで即完結'],
+          ].map(([day,t,d],i,arr)=>`
+            <div style="flex:1;text-align:center;position:relative">
+              <div style="font-size:9px;font-weight:700;color:var(--gold);margin-bottom:4px">${day}</div>
+              <div style="width:28px;height:28px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:11px;font-weight:700;color:#fff">${i+1}</div>
+              <div style="font-size:10px;font-weight:700;color:#fff;margin-bottom:2px">${t}</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.6);line-height:1.4">${d}</div>
+              ${i<arr.length-1?`<div style="position:absolute;top:30px;right:-6px;width:12px;height:1.5px;background:rgba(255,255,255,.3)"></div>`:''}
+            </div>`).join('')}
+        </div>
+        <button onclick="openInquiry(${p.id})" style="width:100%;margin-top:16px;padding:12px;border-radius:10px;border:none;background:var(--gold);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.3px">
+          今すぐ問い合わせる →
+        </button>
+      </div>
+
+
       <div class="cta-bar">
         <div><div class="cta-label">月額料金（税込）</div><div class="cta-price">${priceHTML}</div></div>
-        <button class="cta-btn" onclick="openInquiry(${p.id})">📩 問い合わせる</button>
+        <button class="cta-btn" onclick="openInquiry(${p.id})">問い合わせる</button>
       </div>
+
+      <!-- LINEシェア -->
+      <a href="${lineUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;border-radius:12px;padding:13px;margin-top:10px;text-decoration:none;color:#fff;font-size:13px;font-weight:700">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.98 7.42c.12 0 .22.1.22.22v.86c0 .12-.1.22-.22.22h-3.34v.78h3.34c.12 0 .22.1.22.22v.86c0 .12-.1.22-.22.22h-3.34v.78h3.34c.12 0 .22.1.22.22v.86c0 .12-.1.22-.22.22h-4.42a.22.22 0 01-.22-.22V9.64c0-.12.1-.22.22-.22h4.42zm-6.2 0c.12 0 .22.1.22.22v4.42c0 .12-.1.22-.22.22h-.86a.22.22 0 01-.22-.22V9.64c0-.12.1-.22.22-.22h.86zm-2.16 0c.12 0 .22.1.22.22v2.8l-2.14-2.9a.22.22 0 00-.18-.12h-.86a.22.22 0 00-.22.22v4.42c0 .12.1.22.22.22h.86c.12 0 .22-.1.22-.22v-2.8l2.14 2.9c.04.06.1.12.18.12h.86c.12 0 .22-.1.22-.22V9.64c0-.12-.1-.22-.22-.22h-.3z"/></svg>
+        LINEでシェアする
+      </a>
+
+      ${similarHTML}
     </div>
   </div>`;
   document.getElementById('detail_view').style.display = '';
@@ -1243,6 +2701,7 @@ function backToList() {
   document.getElementById('list_view').style.display = '';
   document.getElementById('detail_view').style.display = 'none';
   document.getElementById('btn_back').style.display = 'none';
+  document.getElementById('hdr_tabs').style.display = '';
 }
 
 // ============================================================
@@ -1252,8 +2711,9 @@ function openInquiry(id) {
   const p = state.properties.find(x=>x.id===id);
   if (!p) return;
   state.inquiryProp = p;
-  document.getElementById('inq_prop_label').textContent = '📍 ' + p.name;
-  ['inq_name','inq_email','inq_tel','inq_msg'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('inq_prop_label').textContent = p.name + (p.price>0?' · ¥'+p.price.toLocaleString()+'/月':'');
+  state._inqStep = 1;
+  renderInqStep(1);
   document.getElementById('inq_modal').style.display = '';
 }
 
@@ -1261,21 +2721,172 @@ function closeInquiry() {
   document.getElementById('inq_modal').style.display = 'none';
 }
 
-function submitInquiry() {
-  const name = document.getElementById('inq_name').value.trim();
-  const email = document.getElementById('inq_email').value.trim();
-  if (!name || !email) { alert('お名前とメールアドレスは必須です'); return; }
-  state.inquiries.push({
-    id: Date.now(), name, email,
-    tel: document.getElementById('inq_tel').value,
-    propertyName: state.inquiryProp.name,
-    message: document.getElementById('inq_msg').value,
-    date: new Date().toISOString().slice(0,10),
-    status: '未対応',
+function renderInqStep(step) {
+  state._inqStep = step;
+
+  // ステップインジケーター更新
+  [1,2,3].forEach(n => {
+    const circle = document.getElementById('inq_step_circle_'+n);
+    const label = document.getElementById('inq_step_label_'+n);
+    if (!circle) return;
+    if (n < step) {
+      circle.style.background = '#3fb950'; circle.style.borderColor = '#3fb950';
+      circle.style.color = '#fff'; circle.innerHTML = '✓';
+      label.style.color = '#3fb950';
+    } else if (n === step) {
+      circle.style.background = 'rgba(255,255,255,.2)'; circle.style.borderColor = '#fff';
+      circle.style.color = '#fff'; circle.textContent = n;
+      label.style.color = '#fff';
+    } else {
+      circle.style.background = 'transparent'; circle.style.borderColor = 'rgba(255,255,255,.3)';
+      circle.style.color = 'rgba(255,255,255,.4)'; circle.textContent = n;
+      label.style.color = 'rgba(255,255,255,.4)';
+    }
+    const line = document.getElementById('inq_step_line_'+n);
+    if (line) line.style.background = n < step ? '#3fb950' : 'rgba(255,255,255,.2)';
   });
-  closeInquiry();
-  showToast('✓ 問い合わせを送信しました');
+
+  const content = document.getElementById('inq_step_content');
+
+  if (step === 1) {
+    content.innerHTML = `
+      <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:16px">申込情報を入力してください</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px">お名前 *</label>
+          <input id="inq_name" class="form-input" placeholder="山田 太郎"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px">メールアドレス *</label>
+          <input id="inq_email" class="form-input" type="email" placeholder="example@email.com"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px">電話番号</label>
+          <input id="inq_tel" class="form-input" type="tel" placeholder="090-0000-0000"></div>
+        <div><label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px">車種・ご要望</label>
+          <textarea id="inq_msg" class="form-input" rows="2" placeholder="例：普通車、来月から契約希望" style="resize:none"></textarea></div>
+      </div>
+      <button onclick="inqNextStep()" style="width:100%;margin-top:18px;padding:13px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        次へ：本人確認 →
+      </button>`;
+
+  } else if (step === 2) {
+    content.innerHTML = `
+      <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:6px">本人確認（eKYC）</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:18px;line-height:1.6">運転免許証またはマイナンバーカードの写真をアップロードしてください。来店・郵送不要でオンライン完結できます。</div>
+
+      <!-- アップロードエリア -->
+      <div id="kyc_upload_area" onclick="triggerKycUpload()" style="border:2px dashed var(--b);border-radius:14px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px"
+        onmouseover="this.style.borderColor='var(--a)';this.style.background='var(--al)'" onmouseout="this.style.borderColor='var(--b)';this.style.background='transparent'">
+        <div id="kyc_preview" style="display:none;margin-bottom:12px">
+          <img id="kyc_img" style="max-width:100%;max-height:120px;border-radius:8px;object-fit:cover">
+        </div>
+        <div id="kyc_placeholder">
+          <div style="font-size:32px;margin-bottom:8px">🪪</div>
+          <div style="font-size:13px;font-weight:600;color:var(--t)">タップして免許証をアップロード</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:4px">JPG・PNG対応 / 最大10MB</div>
+        </div>
+        <input type="file" id="kyc_file_input" accept="image/*" style="display:none" onchange="handleKycUpload(this)">
+      </div>
+
+      <!-- セキュリティバッジ -->
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f0f7f0;border-radius:10px;margin-bottom:18px">
+        <div style="font-size:18px">🔒</div>
+        <div style="font-size:11px;color:#1a5c3a;line-height:1.5">
+          <span style="font-weight:700">SSL暗号化通信</span>で安全に送信されます。<br>
+          個人情報は契約審査のみに使用し、第三者提供はしません。
+        </div>
+      </div>
+
+      <div id="kyc_status" style="display:none;margin-bottom:12px"></div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="renderInqStep(1)" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--b);background:transparent;color:var(--t2);cursor:pointer;font-family:inherit">戻る</button>
+        <button onclick="submitWithKyc()" id="kyc_submit_btn" style="flex:2;padding:12px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">申込を送信する</button>
+      </div>`;
+
+  } else if (step === 3) {
+    content.innerHTML = `
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:56px;margin-bottom:16px">✅</div>
+        <div style="font-size:18px;font-weight:900;color:var(--t);margin-bottom:8px">申込が完了しました</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.8;margin-bottom:20px">
+          担当者より<strong>1〜2営業日以内</strong>にご連絡いたします。<br>
+          登録メールアドレスに確認メールをお送りしました。
+        </div>
+        <!-- 次のステップ -->
+        <div style="background:var(--bg);border-radius:14px;padding:16px;margin-bottom:20px;text-align:left">
+          <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">申込後の流れ</div>
+          ${[['即時','申込受付・確認メール送信'],['数分以内','AIが空き状況・条件を自動照合'],['当日中','電子契約書送付・署名で完結']].map(([d,t])=>`
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div style="width:44px;font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0">${d}</div>
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--a);flex-shrink:0"></div>
+              <div style="font-size:12px;color:var(--t)">${t}</div>
+            </div>`).join('')}
+        </div>
+        <button onclick="closeInquiry()" style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">閉じる</button>
+      </div>`;
+  }
 }
+
+function inqNextStep() {
+  const name = document.getElementById('inq_name')?.value.trim();
+  const email = document.getElementById('inq_email')?.value.trim();
+  if (!name || !email) {
+    showToast('⚠ お名前とメールアドレスを入力してください');
+    return;
+  }
+  renderInqStep(2);
+}
+
+function triggerKycUpload() {
+  document.getElementById('kyc_file_input').click();
+}
+
+function handleKycUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('kyc_img').src = e.target.result;
+    document.getElementById('kyc_preview').style.display = '';
+    document.getElementById('kyc_placeholder').style.display = 'none';
+    document.getElementById('kyc_upload_area').style.borderColor = '#3fb950';
+    document.getElementById('kyc_upload_area').style.background = '#f0faf4';
+    // AI読み取り中のモック
+    const status = document.getElementById('kyc_status');
+    status.style.display = '';
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff8e8;border-radius:10px;border:1px solid #f0dfa0">
+      <div style="width:14px;height:14px;border:2px solid #c9a84c;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0"></div>
+      <div style="font-size:12px;color:#7a5900;font-weight:600">AIが免許証情報を読み取り中...</div>
+    </div>`;
+    setTimeout(() => {
+      status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f0faf4;border-radius:10px;border:1px solid #b8e0c8">
+        <div style="font-size:16px">✅</div>
+        <div style="font-size:12px;color:#1a5c3a;font-weight:600">本人確認書類を確認しました</div>
+      </div>`;
+    }, 1800);
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitWithKyc() {
+  const btn = document.getElementById('kyc_submit_btn');
+  btn.textContent = '送信中...'; btn.disabled = true;
+  setTimeout(() => {
+    // 問い合わせをstateに追加
+    const name = document.getElementById('inq_name')?.value || '';
+    const email = document.getElementById('inq_email')?.value || '';
+    state.inquiries.push({
+      id: Date.now(), name, email,
+      tel: document.getElementById('inq_tel')?.value || '',
+      propertyName: state.inquiryProp?.name || '',
+      message: document.getElementById('inq_msg')?.value || '',
+      date: new Date().toISOString().slice(0,10),
+      status: '未対応',
+    });
+    renderInqStep(3);
+  }, 1000);
+}
+
+function submitInquiry() { submitWithKyc(); }
+
+
 
 // ============================================================
 // AI CHAT
@@ -1341,6 +2952,16 @@ function sendChatText(text) {
     const {text: replyText, props} = chatSearch(text);
     state.chatTyping = false;
     addChatMsg('ai', replyText, props, []);
+    // チャットの検索条件をメイン画面に反映
+    const tokens = tokenize(text);
+    if (tokens.length > 0) {
+      state.query = tokens.slice(0,2).join(' ');
+      state.limit = 50;
+      state.aiRanking = null;
+      document.getElementById('q').value = state.query;
+      renderList();
+      updateAdvice();
+    }
   }, 700);
 }
 
@@ -1419,9 +3040,281 @@ function showToast(msg) {
 // ============================================================
 // ADMIN
 // ============================================================
+function previewContract(id) {
+  const c = state.contracts.find(x=>x.id===id);
+  if (!c) return;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto">
+      <div style="padding:20px 24px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:16px;font-weight:700;color:#e6edf3">月極駐車場 賃貸借契約書</div>
+        <button onclick="this.closest('[style]').remove()" style="background:transparent;border:none;color:#8b949e;font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:24px;font-size:13px;color:#e6edf3;line-height:2">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:18px;font-weight:900;margin-bottom:4px">月極駐車場 賃貸借契約書</div>
+          <div style="font-size:12px;color:#8b949e">契約番号：PL-2026-${String(id).padStart(4,'0')}</div>
+        </div>
+        <div style="background:#161b22;border-radius:10px;padding:16px;margin-bottom:16px">
+          <div style="color:#8b949e;font-size:11px;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">契約情報</div>
+          ${[['賃借人',c.name],['物件名',c.propertyName],['車種',c.carType],['月額賃料','¥'+c.monthlyFee.toLocaleString()],['契約開始日',c.startDate],['契約終了日',c.endDate]].map(([l,v])=>`
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #30363d">
+            <span style="color:#8b949e">${l}</span>
+            <span style="font-weight:600">${v}</span>
+          </div>`).join('')}
+        </div>
+        <div style="font-size:12px;color:#8b949e;margin-bottom:20px;line-height:1.8">
+          第1条（目的）賃貸人は賃借人に対し、上記物件を月極駐車場として賃貸し、賃借人はこれを借り受けます。<br>
+          第2条（賃料）賃借人は毎月25日までに上記賃料を指定口座へ振り込むものとします。<br>
+          第3条（禁止事項）転貸・目的外使用を禁じます。第4条（解約）1ヶ月前の書面通知により解約できます。
+        </div>
+        ${c.status==='署名待ち'?`
+        <div style="text-align:center">
+          <div style="font-size:12px;color:#8b949e;margin-bottom:12px">署名することで契約内容に同意したものとみなします</div>
+          <button onclick="signContract(${c.id},this)" style="background:#3fb950;border:none;border-radius:12px;padding:14px 40px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">✍ 電子署名する</button>
+        </div>`:c.status==='締結済み'?`
+        <div style="text-align:center;padding:16px;background:#3fb95015;border-radius:10px;border:1px solid #3fb95033">
+          <div style="font-size:24px;margin-bottom:4px">✅</div>
+          <div style="font-size:14px;font-weight:700;color:#3fb950">署名済み・契約締結完了</div>
+        </div>`:''}
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function signContract(id, btn) {
+  btn.textContent = '署名処理中...'; btn.disabled = true;
+  setTimeout(() => {
+    const c = state.contracts.find(x=>x.id===id);
+    if (c) c.status = '締結済み';
+    btn.closest('[style*="position:fixed"]').remove();
+    showToast('✅ 電子署名が完了しました。契約が締結されました。');
+    renderAdmin();
+  }, 1200);
+}
+
+function sendContract(id) {
+  const c = state.contracts.find(x=>x.id===id);
+  if (!c) return;
+  c.status = '署名待ち';
+  c.sentDate = new Date().toISOString().slice(0,10);
+  showToast('📧 契約書を送付しました');
+  renderAdmin();
+}
+
+function reminderContract(id) {
+  showToast('📧 署名の督促メールを送信しました');
+}
+
+function showNewContract() {
+  const modal = document.createElement('div');
+  modal.id = 'new_contract_modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto">
+      <!-- ヘッダー -->
+      <div style="padding:20px 24px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#0d1117;z-index:1">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#e6edf3">新規契約書作成</div>
+          <div style="font-size:11px;color:#8b949e;margin-top:2px">必要事項を入力して契約書を生成します</div>
+        </div>
+        <button onclick="document.getElementById('new_contract_modal').remove()" style="background:transparent;border:none;color:#8b949e;font-size:20px;cursor:pointer;line-height:1">✕</button>
+      </div>
+
+      <!-- フォーム -->
+      <div style="padding:24px;display:flex;flex-direction:column;gap:18px" id="contract_form">
+
+        <!-- 賃借人情報 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#58a6ff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">賃借人情報</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${contractInput('cf_name','氏名','例：田中 太郎','text')}
+            ${contractInput('cf_email','メールアドレス','例：tanaka@example.com','email')}
+            ${contractInput('cf_tel','電話番号','例：090-1234-5678','tel')}
+            ${contractInput('cf_carnum','車のナンバー','例：品川 330 あ 1234','text')}
+          </div>
+        </div>
+
+        <!-- 物件情報 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">物件情報</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${contractInput('cf_prop','物件名','例：九段北パーキング','text')}
+            ${contractInput('cf_addr','所在地','例：東京都千代田区九段北1-8','text')}
+            <div>
+              <label style="font-size:11px;color:#8b949e;display:block;margin-bottom:5px">車種</label>
+              <select id="cf_cartype" style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 12px;color:#e6edf3;font-size:13px;outline:none">
+                <option>普通車</option><option>軽自動車</option><option>コンパクト</option><option>ワンボックス</option>
+              </select>
+            </div>
+            ${contractInput('cf_fee','月額賃料（円）','例：35000','number')}
+          </div>
+        </div>
+
+        <!-- 振込先口座 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#d29922;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">振込先口座</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${contractInput('cf_bank','金融機関名','例：三菱UFJ銀行','text')}
+            ${contractInput('cf_branch','支店名','例：新宿支店','text')}
+            <div>
+              <label style="font-size:11px;color:#8b949e;display:block;margin-bottom:5px">口座種別</label>
+              <select id="cf_actype" style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 12px;color:#e6edf3;font-size:13px;outline:none">
+                <option>普通</option><option>当座</option>
+              </select>
+            </div>
+            ${contractInput('cf_acnum','口座番号','例：1234567','text')}
+            ${contractInput('cf_acname','口座名義（カナ）','例：シライシ タクヤ','text')}
+          </div>
+        </div>
+
+        <!-- 契約期間 -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#d29922;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">契約期間</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${contractInput('cf_start','契約開始日','','date')}
+            ${contractInput('cf_end','契約終了日','','date')}
+          </div>
+          <div style="margin-top:10px">
+            <label style="font-size:11px;color:#8b949e;display:block;margin-bottom:5px">支払日</label>
+            <select id="cf_payday" style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 12px;color:#e6edf3;font-size:13px;outline:none">
+              <option value="25">毎月25日</option><option value="末日">毎月末日</option><option value="1">毎月1日</option><option value="15">毎月15日</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 特記事項 -->
+        <div>
+          <label style="font-size:11px;color:#8b949e;display:block;margin-bottom:5px">特記事項（任意）</label>
+          <textarea id="cf_note" rows="3" placeholder="例：屋根付きスペース利用、24時間入出庫可" style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 12px;color:#e6edf3;font-size:13px;outline:none;resize:vertical;font-family:inherit"></textarea>
+        </div>
+
+        <!-- ボタン -->
+        <div style="display:flex;gap:10px;padding-top:4px">
+          <button onclick="document.getElementById('new_contract_modal').remove()" style="flex:1;padding:13px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#8b949e;font-size:13px;cursor:pointer;font-family:inherit">キャンセル</button>
+          <button onclick="generateContract()" id="gen_btn" style="flex:2;padding:13px;border-radius:10px;border:none;background:#3fb950;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">契約書を生成する →</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  // 日付のデフォルト値
+  const today = new Date();
+  const nextYear = new Date(today);
+  nextYear.setFullYear(nextYear.getFullYear() + 1);
+  document.getElementById('cf_start').value = today.toISOString().slice(0,10);
+  document.getElementById('cf_end').value = nextYear.toISOString().slice(0,10);
+}
+
+function contractInput(id, label, placeholder, type) {
+  return `<div>
+    <label style="font-size:11px;color:#8b949e;display:block;margin-bottom:5px">${label}</label>
+    <input id="${id}" type="${type}" placeholder="${placeholder}"
+      style="width:100%;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 12px;color:#e6edf3;font-size:13px;outline:none;font-family:inherit"
+      onfocus="this.style.borderColor='#58a6ff'" onblur="this.style.borderColor='#30363d'">
+  </div>`;
+}
+
+function generateContract() {
+  const btn = document.getElementById('gen_btn');
+  const name = document.getElementById('cf_name').value.trim();
+  const prop = document.getElementById('cf_prop').value.trim();
+  const fee = document.getElementById('cf_fee').value.trim();
+
+  if (!name || !prop || !fee) {
+    btn.textContent = '⚠ 氏名・物件名・月額を入力してください';
+    btn.style.background = '#f85149';
+    setTimeout(() => { btn.textContent = '契約書を生成する →'; btn.style.background = '#3fb950'; }, 2000);
+    return;
+  }
+
+  btn.textContent = '生成中...'; btn.disabled = true;
+
+  setTimeout(() => {
+    // フォームデータ収集
+    const data = {
+      name, prop,
+      email: document.getElementById('cf_email').value,
+      tel: document.getElementById('cf_tel').value,
+      carnum: document.getElementById('cf_carnum').value,
+      addr: document.getElementById('cf_addr').value,
+      cartype: document.getElementById('cf_cartype').value,
+      fee: parseInt(fee).toLocaleString(),
+      start: document.getElementById('cf_start').value,
+      end: document.getElementById('cf_end').value,
+      payday: document.getElementById('cf_payday').value,
+      note: document.getElementById('cf_note').value,
+      bank: document.getElementById('cf_bank').value,
+      branch: document.getElementById('cf_branch').value,
+      actype: document.getElementById('cf_actype').value,
+      acnum: document.getElementById('cf_acnum').value,
+      acname: document.getElementById('cf_acname').value,
+      contractNo: 'PL-2026-' + String(Date.now()).slice(-4),
+    };
+
+    // モーダルを契約書プレビューに切り替え
+    document.getElementById('contract_form').innerHTML = `
+      <div style="text-align:center;padding:8px 0 20px">
+        <div style="font-size:28px;margin-bottom:8px">✅</div>
+        <div style="font-size:15px;font-weight:700;color:#3fb950;margin-bottom:4px">契約書が生成されました</div>
+        <div style="font-size:12px;color:#8b949e">契約番号：${data.contractNo}</div>
+      </div>
+
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;margin-bottom:16px;font-size:13px;color:#e6edf3;line-height:2">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:17px;font-weight:900;margin-bottom:4px">月極駐車場 賃貸借契約書</div>
+          <div style="font-size:11px;color:#8b949e">契約番号：${data.contractNo} | 作成日：${new Date().toLocaleDateString('ja-JP')}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:12px">
+          ${[['賃借人',data.name],['連絡先',data.email||'—'],['電話番号',data.tel||'—'],['車のナンバー',data.carnum||'—'],['物件名',data.prop],['所在地',data.addr||'—'],['車種',data.cartype],['月額賃料','¥'+data.fee],['支払日','毎月'+data.payday+'日'],['契約開始',data.start],['契約終了',data.end]].map(([l,v])=>`<span style="color:#8b949e;white-space:nowrap">${l}</span><span style="font-weight:600">${v}</span>`).join('')}
+        </div>
+        ${(data.bank||data.acnum)?`
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #30363d">
+          <div style="font-size:11px;font-weight:700;color:#d29922;margin-bottom:8px">振込先口座</div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:12px">
+            ${[['金融機関',data.bank||'—'],['支店',data.branch||'—'],['口座種別',data.actype],['口座番号',data.acnum||'—'],['口座名義',data.acname||'—']].map(([l,v])=>`<span style="color:#8b949e;white-space:nowrap">${l}</span><span style="font-weight:600">${v}</span>`).join('')}
+          </div>
+        </div>`:''}
+        ${data.note?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid #30363d;font-size:12px"><span style="color:#8b949e">特記事項</span><br>${data.note}</div>`:''}
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid #30363d;font-size:11px;color:#8b949e;line-height:1.8">
+          第1条（目的）賃貸人は賃借人に対し、上記物件を月極駐車場として賃貸し、賃借人はこれを借り受けます。
+          第2条（賃料）賃借人は毎月${data.payday}日までに上記賃料を指定口座へ振り込むものとします。
+          第3条（禁止事項）転貸・目的外使用を禁じます。
+          第4条（解約）1ヶ月前の書面通知により解約できます。
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="sendNewContract('${data.name}','${data.prop}',${parseInt(fee)},document.getElementById('cf_start')?.value||'${data.start}',document.getElementById('cf_end')?.value||'${data.end}',document.getElementById('cf_cartype')?.value||'${data.cartype}')" 
+          style="flex:1;padding:13px;border-radius:10px;border:none;background:#58a6ff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          📧 署名依頼を送付する
+        </button>
+        <button onclick="document.getElementById('new_contract_modal').remove()"
+          style="flex:1;padding:13px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#e6edf3;font-size:13px;cursor:pointer;font-family:inherit">
+          閉じる
+        </button>
+      </div>`;
+  }, 1000);
+}
+
+function sendNewContract(name, prop, fee, start, end, cartype) {
+  // 契約一覧に追加
+  const newId = state.contracts.length + 1;
+  state.contracts.unshift({
+    id: newId, name, propertyName: prop,
+    monthlyFee: fee, startDate: start, endDate: end,
+    status: '署名待ち', carType: cartype,
+    sentDate: new Date().toISOString().slice(0,10)
+  });
+  document.getElementById('new_contract_modal').remove();
+  showToast('📧 署名依頼メールを送付しました');
+  adminTab('contract');
+}
+
 function adminTab(tab) {
   state.adminTab = tab;
-  ['dash','props','inq','app'].forEach(t => {
+  ['dash','props','inq','contract','payment','customer'].forEach(t => {
     document.getElementById('tab_'+t)?.classList.toggle('on', t===tab);
   });
   renderAdmin();
@@ -1430,24 +3323,36 @@ function adminTab(tab) {
 function renderAdmin() {
   const body = document.getElementById('admin_body');
   const t = state.adminTab;
-  const avail = state.properties.filter(p=>p.available).length;
-  const pInq = state.inquiries.filter(i=>i.status==='未対応').length;
-  const pApp = state.applications.filter(a=>a.status==='審査中').length;
 
   if (t === 'dash') {
+    const totalRevenue = state.payments.filter(p=>p.status!=='未入金').reduce((s,p)=>s+p.amount,0);
+    const activeContracts = state.contracts.filter(c=>c.status==='締結済み').length;
     body.innerHTML = `
     <div style="font-size:14px;font-weight:700;margin-bottom:16px">ダッシュボード</div>
     <div class="stat-grid">
-      ${[['総物件数',state.properties.length,'#58a6ff'],['空きあり',avail,'#3fb950'],['未対応問合せ',pInq,'#d29922'],['審査中申込',pApp,'#f85149']].map(([l,v,c])=>`<div class="stat-card"><div class="stat-val" style="color:${c}">${v.toLocaleString()}</div><div class="stat-label">${l}</div></div>`).join('')}
+      ${[
+        ['今月収益','¥'+totalRevenue.toLocaleString(),'#3fb950'],
+        ['契約中',activeContracts+'件','#58a6ff'],
+        ['未対応問合せ',state.inquiries.filter(i=>i.status==='未対応').length+'件','#d29922'],
+        ['未入金',state.payments.filter(p=>p.status==='未入金').length+'件','#f85149'],
+      ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="admin-card">
-        <div style="font-size:12px;font-weight:700;color:#d29922;margin-bottom:10px">⚠ 未対応の問い合わせ</div>
-        ${state.inquiries.filter(i=>i.status==='未対応').map(i=>`<div style="padding:7px 0;border-bottom:1px solid #30363d;font-size:12px"><div style="font-weight:600;color:#e6edf3">${esc(i.name)} <span style="color:#8b949e;font-weight:400">— ${esc(i.propertyName)}</span></div><div style="color:#8b949e;font-size:11px;margin-top:2px">${esc(i.message.slice(0,40))}...</div></div>`).join('') || '<div style="color:#8b949e;font-size:12px">なし</div>'}
+        <div style="font-size:12px;font-weight:700;color:#d29922;margin-bottom:10px">未対応の問い合わせ</div>
+        ${state.inquiries.filter(i=>i.status==='未対応').map(i=>`
+        <div style="padding:7px 0;border-bottom:1px solid #30363d;font-size:12px">
+          <div style="font-weight:600;color:#e6edf3">${esc(i.name)} <span style="color:#8b949e;font-weight:400">— ${esc(i.propertyName)}</span></div>
+          <div style="color:#8b949e;font-size:11px;margin-top:2px">${esc(i.message.slice(0,30))}...</div>
+        </div>`).join('') || '<div style="color:#8b949e;font-size:12px">なし</div>'}
       </div>
       <div class="admin-card">
-        <div style="font-size:12px;font-weight:700;color:#f85149;margin-bottom:10px">🔔 審査中の申込</div>
-        ${state.applications.filter(a=>a.status==='審査中').map(a=>`<div style="padding:7px 0;border-bottom:1px solid #30363d;font-size:12px"><div style="font-weight:600;color:#e6edf3">${esc(a.name)} <span style="color:#8b949e;font-weight:400">— ${esc(a.propertyName)}</span></div><div style="color:#8b949e;font-size:11px;margin-top:2px">${esc(a.carType)} ／ ${a.startDate}</div></div>`).join('') || '<div style="color:#8b949e;font-size:12px">なし</div>'}
+        <div style="font-size:12px;font-weight:700;color:#f85149;margin-bottom:10px">署名待ち契約書</div>
+        ${state.contracts.filter(c=>c.status==='署名待ち').map(c=>`
+        <div style="padding:7px 0;border-bottom:1px solid #30363d;font-size:12px">
+          <div style="font-weight:600;color:#e6edf3">${esc(c.name)} <span style="color:#8b949e;font-weight:400">— ${esc(c.propertyName)}</span></div>
+          <div style="color:#8b949e;font-size:11px;margin-top:2px">送付日：${c.sentDate} · ¥${c.monthlyFee.toLocaleString()}/月</div>
+        </div>`).join('') || '<div style="color:#8b949e;font-size:12px">なし</div>'}
       </div>
     </div>`;
   } else if (t === 'props') {
@@ -1518,26 +3423,131 @@ function renderAdmin() {
         <div style="font-size:12px;background:#0d1117;border-radius:6px;padding:8px 11px;color:#e6edf3">${esc(i.message)}</div>
         <div style="font-size:10px;color:#8b949e;margin-top:5px">${i.date}</div>
       </div>`).join('');
-  } else if (t === 'app') {
-    body.innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">申込管理 (${state.applications.length}件)</div>` +
-      [...state.applications].reverse().map(a=>{
-        const sc = {審査中:'#f85149',承認済:'#3fb950',否認:'#f85149'};
-        const bc = {審査中:'rgba(248,81,73,.2)',承認済:'rgba(63,185,80,.2)',否認:'rgba(248,81,73,.2)'};
-        return `<div class="admin-card" style="border-color:${a.status==='審査中'?'#f85149':'#30363d'}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#e6edf3;margin-bottom:4px">${esc(a.name)}</div>
-            <div style="font-size:11px;color:#8b949e;margin-bottom:5px">${esc(a.email)}</div>
-            <div style="font-size:12px;color:#58a6ff;margin-bottom:4px">📍 ${esc(a.propertyName)}</div>
-            <div style="font-size:12px;color:#8b949e">🚗 ${esc(a.carType)} · 入居希望 ${a.startDate}</div>
+  } else if (t === 'contract') {
+    const statusColor = {
+      '締結済み':'#3fb950', '署名待ち':'#d29922', '作成中':'#58a6ff', '解約':'#f85149'
+    };
+    body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700">電子契約管理</div>
+      <button onclick="showNewContract()" style="background:#3fb950;border:none;border-radius:8px;padding:8px 16px;color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">+ 新規契約書作成</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      ${[
+        ['締結済み', state.contracts.filter(c=>c.status==='締結済み').length+'件', '#3fb950'],
+        ['署名待ち', state.contracts.filter(c=>c.status==='署名待ち').length+'件', '#d29922'],
+        ['作成中', state.contracts.filter(c=>c.status==='作成中').length+'件', '#58a6ff'],
+      ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+    </div>
+    ${state.contracts.map(c=>`
+    <div class="admin-card" style="margin-bottom:10px;cursor:pointer" onclick="showContractDetail(${c.id})">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="font-size:13px;font-weight:700;color:#e6edf3">${esc(c.name)}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${statusColor[c.status]||'#8b949e'}22;color:${statusColor[c.status]||'#8b949e'}">${c.status}</span>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-            <span class="badge" style="color:${sc[a.status]||'#8b949e'};background:${bc[a.status]||'rgba(139,148,158,.2)'}">${a.status}</span>
-            ${a.status==='審査中'?`<div style="display:flex;gap:6px"><button onclick="updateApp(${a.id},'承認済')" style="padding:6px 13px;border-radius:7px;border:none;background:#3fb950;color:#fff;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit">承認</button><button onclick="updateApp(${a.id},'否認')" style="padding:6px 13px;border-radius:7px;border:none;background:#f85149;color:#fff;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit">否認</button></div>`:''}
-          </div>
+          <div style="font-size:12px;color:#8b949e">${esc(c.propertyName)} · ${c.carType} · ¥${c.monthlyFee.toLocaleString()}/月</div>
+          <div style="font-size:11px;color:#8b949e;margin-top:3px">契約期間：${c.startDate} 〜 ${c.endDate} · 送付日：${c.sentDate}</div>
         </div>
-      </div>`;
-      }).join('');
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          ${c.status==='署名待ち'?`<button onclick="event.stopPropagation();reminderContract(${c.id})" style="background:transparent;border:1px solid #d29922;border-radius:7px;padding:5px 10px;color:#d29922;font-size:11px;cursor:pointer;font-family:inherit">督促</button>`:''}
+          ${c.status==='作成中'?`<button onclick="event.stopPropagation();sendContract(${c.id})" style="background:#58a6ff;border:none;border-radius:7px;padding:5px 10px;color:#fff;font-size:11px;cursor:pointer;font-family:inherit">送付する</button>`:''}
+          <button onclick="event.stopPropagation();previewContract(${c.id})" style="background:transparent;border:1px solid #30363d;border-radius:7px;padding:5px 10px;color:#e6edf3;font-size:11px;cursor:pointer;font-family:inherit">プレビュー</button>
+        </div>
+      </div>
+    </div>`).join('')}`;
+
+  } else if (t === 'payment') {
+    const totalIncome = state.payments.filter(p=>p.status!=='未入金').reduce((s,p)=>s+p.amount,0);
+    const unpaid = state.payments.filter(p=>p.status==='未入金');
+    const monthlyData = [280000,312000,356000,384000,371000,390000];
+    const maxVal = Math.max(...monthlyData);
+    const months = ['12月','1月','2月','3月','4月','5月'];
+
+    body.innerHTML = `
+    <div style="font-size:14px;font-weight:700;margin-bottom:16px">入金管理・収支レポート</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      ${[
+        ['今月収益', '¥'+totalIncome.toLocaleString(), '#3fb950'],
+        ['未入金', unpaid.length+'件', '#f85149'],
+        ['入金率', Math.round(state.payments.filter(p=>p.status==='入金済み').length/state.payments.length*100)+'%', '#58a6ff'],
+      ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-val" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+    </div>
+
+    <!-- 棒グラフ -->
+    <div class="admin-card" style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#8b949e;margin-bottom:14px">月次収益推移（直近6ヶ月）</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:100px">
+        ${monthlyData.map((v,i)=>`
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="font-size:9px;color:#8b949e">¥${(v/10000).toFixed(0)}万</div>
+            <div style="width:100%;background:${i===5?'#3fb950':'#3fb95066'};border-radius:4px 4px 0 0;height:${Math.round(v/maxVal*80)}px;transition:height .3s"></div>
+            <div style="font-size:9px;color:#8b949e">${months[i]}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 入金一覧 -->
+    <div class="admin-card">
+      <div style="font-size:12px;font-weight:700;color:#8b949e;margin-bottom:12px">入金明細</div>
+      ${state.payments.map(p=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #30363d">
+        <div style="width:8px;height:8px;border-radius:50%;background:${p.status==='入金済み'?'#3fb950':p.status==='遅延入金'?'#d29922':'#f85149'};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:#e6edf3">${esc(p.name)} <span style="color:#8b949e;font-weight:400">— ${esc(p.propertyName)}</span></div>
+          <div style="font-size:11px;color:#8b949e">${p.month} · 期日：${p.dueDate}${p.paidDate?' · 入金：'+p.paidDate:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:13px;font-weight:700;color:#3fb950">¥${p.amount.toLocaleString()}</div>
+          <div style="font-size:10px;color:${p.status==='入金済み'?'#3fb950':p.status==='遅延入金'?'#d29922':'#f85149'}">${p.status}</div>
+        </div>
+        ${p.status==='未入金'?`<button style="background:transparent;border:1px solid #f85149;border-radius:6px;padding:4px 8px;color:#f85149;font-size:10px;cursor:pointer;font-family:inherit;flex-shrink:0">督促</button>`:''}
+      </div>`).join('')}
+    </div>`;
+
+  } else if (t === 'customer') {
+    const statusColor2 = {'契約中':'#3fb950','審査中':'#d29922','問い合わせ中':'#58a6ff','解約':'#f85149'};
+    body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700">顧客データ</div>
+      <div style="font-size:12px;color:#8b949e">総顧客数：${state.customers.length}名 · 契約中：${state.customers.filter(c=>c.status==='契約中').length}名</div>
+    </div>
+    ${state.customers.map(c=>`
+    <div class="admin-card" style="margin-bottom:10px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="width:40px;height:40px;background:#21262d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#58a6ff;flex-shrink:0">${c.name[0]}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+            <div style="font-size:14px;font-weight:700;color:#e6edf3">${esc(c.name)}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${statusColor2[c.status]||'#8b949e'}22;color:${statusColor2[c.status]||'#8b949e'}">${c.status}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+            <div style="font-size:11px;color:#8b949e">📧 ${esc(c.email)}</div>
+            <div style="font-size:11px;color:#8b949e">📱 ${esc(c.tel)}</div>
+            <div style="font-size:11px;color:#8b949e">🚗 ${esc(c.carType)}</div>
+            <div style="font-size:11px;color:#8b949e">📅 利用開始：${c.since}</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:8px">
+            <div style="text-align:center;background:#21262d;border-radius:8px;padding:8px 16px">
+              <div style="font-size:16px;font-weight:800;color:#3fb950">¥${c.totalPaid.toLocaleString()}</div>
+              <div style="font-size:10px;color:#8b949e">累計支払額</div>
+            </div>
+            <div style="text-align:center;background:#21262d;border-radius:8px;padding:8px 16px">
+              <div style="font-size:16px;font-weight:800;color:#58a6ff">${c.contractCount}</div>
+              <div style="font-size:10px;color:#8b949e">契約件数</div>
+            </div>
+          </div>
+          ${c.memo?`<div style="font-size:11px;color:#d29922;background:#d2992215;border-radius:6px;padding:5px 9px">📝 ${esc(c.memo)}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button onclick="adminTab('contract')" style="background:transparent;border:1px solid #30363d;border-radius:7px;padding:5px 10px;color:#e6edf3;font-size:11px;cursor:pointer;font-family:inherit">契約確認</button>
+          <button onclick="adminTab('payment')" style="background:transparent;border:1px solid #30363d;border-radius:7px;padding:5px 10px;color:#e6edf3;font-size:11px;cursor:pointer;font-family:inherit">入金確認</button>
+        </div>
+      </div>
+    </div>`).join('')}`;
+  } else if (t === 'app') {
+    body.innerHTML = '<div style="font-size:14px;font-weight:700;color:#e6edf3;margin-bottom:14px">申込管理</div><div style="color:#8b949e;font-size:13px">電子契約タブで契約・申込管理ができます。</div>';
   }
 }
 
