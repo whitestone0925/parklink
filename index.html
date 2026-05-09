@@ -484,7 +484,7 @@ button,input,select,textarea{font-family:inherit;}
     <!-- タブ -->
     <div class="hdr-tabs" id="hdr_tabs">
       <button class="hdr-tab active" id="tab_search" onclick="switchTab('search')">駐車場を探す</button>
-      <button class="hdr-tab" id="tab_owner" onclick="switchTab('owner')">オーナー診断</button>
+      <button class="hdr-tab" id="tab_corp" onclick="switchTab('corp')">法人の方はこちら</button>
       <button class="hdr-tab" id="tab_heatmap" onclick="switchTab('heatmap')">ParkScope</button>
       <button class="hdr-tab" id="tab_column" onclick="switchTab('column')">コラム</button>
     </div>
@@ -556,10 +556,11 @@ button,input,select,textarea{font-family:inherit;}
       </div>
 
     <!-- オーナー診断ビュー（カウンセリング形式） -->
-    <div id="owner_view" style="display:none">
-      <div style="max-width:600px;margin:0 auto;padding:32px 20px" id="owner_counseling"></div>
+    <!-- 法人ビュー -->
+    <div id="corp_view" style="display:none">
+      <div style="max-width:860px;margin:0 auto;padding:32px 20px" id="corp_body"></div>
     </div>
-    </div>
+
     <!-- ヒートマップビュー -->
     <div id="heatmap_view" style="display:none">
       <div style="max-width:900px;margin:0 auto;padding:24px 16px" id="heatmap_body"></div>
@@ -1407,8 +1408,368 @@ function parkingIcon(type) {
 
 
 // ============================================================
-// HEATMAP（株価風相場マップ）
+// CORPORATE PAGE（法人向け）
 // ============================================================
+let corpState = {
+  step: 'form', // form | results
+  count: 1,
+  usage: '',
+  area: '',
+  budget: 0,
+  carType: '',
+  dept: '',
+  results: [],
+};
+
+function renderCorpPage() {
+  if (corpState.step === 'form') renderCorpForm();
+  else renderCorpResults();
+}
+
+function renderCorpForm() {
+  const el = document.getElementById('corp_body');
+  el.innerHTML = `
+    <!-- ヒーロー -->
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:20px;padding:28px 24px;margin-bottom:24px">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:#fff;margin-bottom:14px">
+        🏢 法人・企業のお客様向け
+      </div>
+      <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.3;margin-bottom:8px">
+        社用車の月極駐車場を<br>まとめて手配できます
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:16px">
+        台数・エリア・用途を入力するだけで候補物件を一括表示。<br>コスト試算・まとめて問い合わせまで一気通貫で対応します。
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${[['5台以上の管理','✅'],['コスト一括試算','✅'],['電子契約対応','✅'],['1営業日以内に返答','✅']].map(([l,i])=>`
+          <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border-radius:20px;padding:5px 12px">
+            <span style="color:var(--gold);font-size:11px">✓</span>
+            <span style="font-size:11px;color:#fff">${l}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 入力フォーム -->
+    <div style="background:#fff;border-radius:20px;padding:24px;border:1px solid var(--b);margin-bottom:16px">
+      <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:20px">🔍 条件を入力してください</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <!-- 台数 -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">台数 *</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button onclick="corpState.count=Math.max(1,corpState.count-1);document.getElementById('corp_count').textContent=corpState.count;updateCorpCost()"
+              style="width:36px;height:36px;border-radius:10px;border:1.5px solid var(--b);background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+            <div style="font-size:24px;font-weight:900;color:var(--a);min-width:40px;text-align:center" id="corp_count">1</div>
+            <button onclick="corpState.count=Math.min(99,corpState.count+1);document.getElementById('corp_count').textContent=corpState.count;updateCorpCost()"
+              style="width:36px;height:36px;border-radius:10px;border:1.5px solid var(--b);background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">＋</button>
+            <span style="font-size:13px;color:var(--t2)">台</span>
+          </div>
+        </div>
+
+        <!-- 用途 -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">用途 *</label>
+          <select id="corp_usage" onchange="corpState.usage=this.value"
+            style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;background:#fff">
+            <option value="">選択してください</option>
+            <option value="営業車">営業車</option>
+            <option value="役員車">役員車</option>
+            <option value="通勤用">通勤用（従業員）</option>
+            <option value="配送車">配送・物流車</option>
+            <option value="社用車">社用車（その他）</option>
+          </select>
+        </div>
+
+        <!-- エリア -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">エリア *</label>
+          <input id="corp_area" type="text" placeholder="例：新宿区、渋谷駅周辺"
+            onchange="corpState.area=this.value"
+            style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit"
+            onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'">
+        </div>
+
+        <!-- 車種 -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">車種</label>
+          <select id="corp_cartype" onchange="corpState.carType=this.value"
+            style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;background:#fff">
+            <option value="">指定なし</option>
+            <option value="軽自動車">軽自動車</option>
+            <option value="コンパクト">コンパクト</option>
+            <option value="普通車">普通車</option>
+            <option value="ワンボックス">ワンボックス・ミニバン</option>
+          </select>
+        </div>
+
+        <!-- 予算上限 -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">1台あたり予算上限</label>
+          <div style="position:relative">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--t3)">¥</span>
+            <input id="corp_budget" type="number" placeholder="30000"
+              onchange="corpState.budget=parseInt(this.value)||0;updateCorpCost()"
+              style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px 10px 28px;font-size:13px;outline:none;font-family:inherit"
+              onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'">
+          </div>
+        </div>
+
+        <!-- 部署名 -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">部署名（任意）</label>
+          <input id="corp_dept" type="text" placeholder="例：営業部、総務課"
+            onchange="corpState.dept=this.value"
+            style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit"
+            onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'">
+        </div>
+      </div>
+
+      <!-- コスト試算 -->
+      <div id="corp_cost_preview" style="background:var(--al);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:none">
+        <div style="font-size:11px;font-weight:700;color:var(--a);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">コスト試算（予算上限ベース）</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div><div style="font-size:10px;color:var(--t3)">月額合計</div><div style="font-size:18px;font-weight:900;color:var(--a)" id="corp_monthly">—</div></div>
+          <div><div style="font-size:10px;color:var(--t3)">年間合計</div><div style="font-size:18px;font-weight:900;color:var(--a)" id="corp_yearly">—</div></div>
+        </div>
+      </div>
+
+      <button onclick="searchCorpParking()"
+        style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+        候補物件を検索する →
+      </button>
+    </div>
+
+    <!-- 特徴 -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      ${[
+        ['📋','まとめて問い合わせ','複数物件を一括で問い合わせできます'],
+        ['💰','コスト自動試算','月額×台数×年間コストを即計算'],
+        ['📊','比較表で確認','物件を横並びで比較できます'],
+      ].map(([icon,t,d])=>`
+        <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid var(--b);text-align:center">
+          <div style="font-size:24px;margin-bottom:8px">${icon}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:4px">${t}</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.5">${d}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function updateCorpCost() {
+  const budget = corpState.budget;
+  const count = corpState.count;
+  if (budget > 0 && count > 0) {
+    const monthly = budget * count;
+    const yearly = monthly * 12;
+    document.getElementById('corp_cost_preview').style.display = '';
+    document.getElementById('corp_monthly').textContent = '¥' + monthly.toLocaleString();
+    document.getElementById('corp_yearly').textContent = '¥' + yearly.toLocaleString();
+  }
+}
+
+function searchCorpParking() {
+  const area = document.getElementById('corp_area')?.value.trim();
+  const usage = document.getElementById('corp_usage')?.value;
+  const budget = parseInt(document.getElementById('corp_budget')?.value) || 0;
+  const carType = document.getElementById('corp_cartype')?.value;
+  const dept = document.getElementById('corp_dept')?.value;
+
+  if (!area) { showToast('⚠ エリアを入力してください'); return; }
+  if (!usage) { showToast('⚠ 用途を選択してください'); return; }
+
+  corpState = { ...corpState, area, usage, budget, carType, dept, step: 'results' };
+
+  // 候補物件を検索
+  const tokens = tokenize(area);
+  let candidates = state.properties.filter(p => {
+    const target = p.address + p.ward + p.station;
+    const matchArea = tokens.some(t => target.includes(t));
+    const matchBudget = budget === 0 || p.price === 0 || p.price <= budget;
+    const matchCar = !carType || !p.size || p.size === carType || p.size === '普通車';
+    return matchArea && matchBudget && matchCar && p.available;
+  }).slice(0, 12);
+
+  if (candidates.length === 0) {
+    candidates = state.properties.filter(p => p.available && (budget === 0 || p.price <= budget || p.price === 0)).slice(0, 12);
+  }
+
+  corpState.results = candidates;
+  renderCorpResults();
+}
+
+function renderCorpResults() {
+  const el = document.getElementById('corp_body');
+  const r = corpState;
+  const results = r.results;
+  const avgPrice = results.filter(p=>p.price>0).reduce((s,p)=>s+p.price,0) / (results.filter(p=>p.price>0).length||1);
+  const totalMonthly = Math.round(avgPrice * r.count);
+  const totalYearly = totalMonthly * 12;
+
+  // 選択物件管理
+  if (!window._corpSelected) window._corpSelected = new Set();
+
+  el.innerHTML = `
+    <!-- ヘッダー -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <button onclick="corpState.step='form';window._corpSelected=new Set();renderCorpPage()"
+        style="background:transparent;border:none;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px">
+        ← 条件を変える
+      </button>
+      <div style="font-size:16px;font-weight:800;color:var(--t);flex:1">${r.area} の候補物件</div>
+      <div style="font-size:12px;color:var(--t2)">${results.length}件</div>
+    </div>
+
+    <!-- 条件サマリー -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      ${[
+        ['台数', r.count+'台'],
+        ['用途', r.usage],
+        ['エリア', r.area],
+        r.carType?['車種', r.carType]:null,
+        r.budget?['上限', '¥'+r.budget.toLocaleString()]:null,
+        r.dept?['部署', r.dept]:null,
+      ].filter(Boolean).map(([l,v])=>`
+        <div style="background:var(--al);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--a)">
+          <span style="opacity:.7">${l}：</span><span style="font-weight:700">${v}</span>
+        </div>`).join('')}
+    </div>
+
+    <!-- コスト試算バナー -->
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:16px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.8)">💰 コスト試算（平均月額ベース）</div>
+      <div style="display:flex;gap:20px">
+        <div style="text-align:center">
+          <div style="font-size:10px;color:rgba(255,255,255,.6)">1台あたり平均</div>
+          <div style="font-size:18px;font-weight:900;color:#fff">¥${Math.round(avgPrice).toLocaleString()}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;color:rgba(255,255,255,.6)">${r.count}台 月額合計</div>
+          <div style="font-size:18px;font-weight:900;color:var(--gold)">¥${totalMonthly.toLocaleString()}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;color:rgba(255,255,255,.6)">年間合計</div>
+          <div style="font-size:18px;font-weight:900;color:var(--gold)">¥${totalYearly.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- まとめて問い合わせボタン -->
+    <div id="corp_bulk_bar" style="display:none;position:sticky;top:56px;z-index:50;background:#fff;border:1.5px solid var(--a);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(13,43,78,.15)">
+      <div style="font-size:13px;font-weight:700;color:var(--a);flex:1"><span id="corp_sel_count">0</span>件選択中</div>
+      <button onclick="bulkInquiry()" style="padding:10px 20px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+        まとめて問い合わせ →
+      </button>
+    </div>
+
+    <!-- 物件リスト（表形式） -->
+    <div style="background:#fff;border-radius:16px;border:1px solid var(--b);overflow:hidden;margin-bottom:20px">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--t)">候補物件一覧</div>
+        <div style="font-size:11px;color:var(--t3);margin-left:auto">チェックで選択 → まとめて問い合わせ</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:var(--bg)">
+              <th style="padding:10px 12px;width:32px"></th>
+              ${['物件名','エリア','月額','空き','設備','詳細'].map(h=>`<th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--t2);white-space:nowrap">${h}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody id="corp_table_body">
+            ${results.map((p,i)=>`
+              <tr style="border-bottom:1px solid var(--b);cursor:pointer" id="corp_row_${p.id}"
+                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+                <td style="padding:10px 12px;text-align:center">
+                  <input type="checkbox" onchange="toggleCorpSelect(${p.id},this.checked)"
+                    style="width:16px;height:16px;cursor:pointer;accent-color:var(--a)">
+                </td>
+                <td style="padding:10px 12px">
+                  <div style="font-weight:700;color:var(--t);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
+                  <div style="font-size:10px;color:var(--t3)">${p.type||'平置き'}</div>
+                </td>
+                <td style="padding:10px 12px;color:var(--t2);white-space:nowrap">
+                  ${p.station?p.station+'駅<br>徒歩'+p.walk+'分':esc(p.ward||'')}
+                </td>
+                <td style="padding:10px 12px;white-space:nowrap">
+                  ${p.price>0?`<span style="font-size:14px;font-weight:900;color:var(--a)">¥${p.price.toLocaleString()}</span><span style="font-size:10px;color:var(--t3)">/月</span>`:'<span style="color:var(--t3)">要問合せ</span>'}
+                  ${p.price>0&&r.count>1?`<div style="font-size:10px;color:var(--t3)">${r.count}台 ¥${(p.price*r.count).toLocaleString()}</div>`:''}
+                </td>
+                <td style="padding:10px 12px">
+                  <span style="background:${p.available?'#e8f5ee':'var(--bg)'};color:${p.available?'#1a5c3a':'var(--t3)'};font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">
+                    ${p.available?'空きあり':'満車'}
+                  </span>
+                </td>
+                <td style="padding:10px 12px">
+                  <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    ${p.roof?'<span style="font-size:10px;background:var(--bg);border-radius:6px;padding:2px 6px;color:var(--t2)">屋根</span>':''}
+                    ${p.h24?'<span style="font-size:10px;background:var(--bg);border-radius:6px;padding:2px 6px;color:var(--t2)">24h</span>':''}
+                  </div>
+                </td>
+                <td style="padding:10px 12px">
+                  <button onclick="showDetail(${p.id})" style="padding:5px 12px;border-radius:8px;border:1px solid var(--b);background:#fff;color:var(--a);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">詳細</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 一括見積フォーム -->
+    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--b)">
+      <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:4px">一括見積もり依頼</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:16px">条件を入力して送信すると担当者よりご連絡します</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        ${[['corp_inq_company','会社名 *','株式会社〇〇','text'],['corp_inq_name','担当者名 *','山田 太郎','text'],['corp_inq_email','メールアドレス *','yamada@example.com','email'],['corp_inq_tel','電話番号','03-0000-0000','tel']].map(([id,l,ph,t])=>`
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px">${l}</label>
+            <input id="${id}" type="${t}" placeholder="${ph}"
+              style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit"
+              onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'">
+          </div>`).join('')}
+      </div>
+      <button onclick="submitCorpInquiry()"
+        style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--gold);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        📧 一括見積もりを依頼する
+      </button>
+    </div>`;
+
+  // スティッキーバーの初期状態
+  updateCorpBulkBar();
+}
+
+function toggleCorpSelect(id, checked) {
+  if (!window._corpSelected) window._corpSelected = new Set();
+  if (checked) window._corpSelected.add(id);
+  else window._corpSelected.delete(id);
+  updateCorpBulkBar();
+}
+
+function updateCorpBulkBar() {
+  const bar = document.getElementById('corp_bulk_bar');
+  const cnt = document.getElementById('corp_sel_count');
+  if (!bar || !cnt) return;
+  const size = window._corpSelected?.size || 0;
+  bar.style.display = size > 0 ? 'flex' : 'none';
+  cnt.textContent = size;
+}
+
+function bulkInquiry() {
+  const count = window._corpSelected?.size || 0;
+  showToast(`✅ ${count}件の物件に一括問い合わせを送信しました`);
+  window._corpSelected = new Set();
+  updateCorpBulkBar();
+  document.querySelectorAll('#corp_table_body input[type="checkbox"]').forEach(cb => cb.checked = false);
+}
+
+function submitCorpInquiry() {
+  const company = document.getElementById('corp_inq_company')?.value.trim();
+  const name = document.getElementById('corp_inq_name')?.value.trim();
+  const email = document.getElementById('corp_inq_email')?.value.trim();
+  if (!company || !name || !email) { showToast('⚠ 会社名・担当者名・メールアドレスは必須です'); return; }
+  showToast('✅ 見積もり依頼を送信しました。担当者より1営業日以内にご連絡します。');
+}
+
+
 const WARD_STATS = {"千代田区":{"avg":45323,"min":6920,"max":95040,"total":125,"avail":28,"availRate":22},"中央区":{"avg":42801,"min":3404,"max":95040,"total":103,"avail":10,"availRate":10},"港区":{"avg":47063,"min":10185,"max":95040,"total":72,"avail":20,"availRate":28},"新宿区":{"avg":40788,"min":9592,"max":83160,"total":107,"avail":18,"availRate":17},"文京区":{"avg":41110,"min":6920,"max":95040,"total":95,"avail":17,"availRate":18},"台東区":{"avg":37006,"min":3423,"max":98999,"total":184,"avail":19,"availRate":10},"墨田区":{"avg":33638,"min":11880,"max":98999,"total":223,"avail":18,"availRate":8},"江東区":{"avg":31786,"min":5518,"max":54000,"total":109,"avail":11,"availRate":10},"品川区":{"avg":33620,"min":3404,"max":64152,"total":149,"avail":21,"availRate":14},"目黒区":{"avg":40016,"min":11880,"max":95040,"total":94,"avail":7,"availRate":7},"大田区":{"avg":27636,"min":3729,"max":95040,"total":266,"avail":11,"availRate":4},"世田谷区":{"avg":30751,"min":10185,"max":57750,"total":75,"avail":6,"availRate":8},"渋谷区":{"avg":44184,"min":21384,"max":95040,"total":83,"avail":12,"availRate":14},"中野区":{"avg":30243,"min":11087,"max":63070,"total":77,"avail":4,"availRate":5},"杉並区":{"avg":24961,"min":10004,"max":47520,"total":73,"avail":2,"availRate":3},"豊島区":{"avg":35681,"min":13068,"max":95040,"total":129,"avail":6,"availRate":5},"北区":{"avg":29276,"min":11880,"max":61314,"total":111,"avail":6,"availRate":5},"荒川区":{"avg":27812,"min":11880,"max":71280,"total":129,"avail":8,"availRate":6},"板橋区":{"avg":27992,"min":13068,"max":71280,"total":139,"avail":13,"availRate":9},"練馬区":{"avg":21424,"min":10004,"max":48915,"total":147,"avail":10,"availRate":7},"足立区":{"avg":17448,"min":5665,"max":47784,"total":295,"avail":22,"availRate":7},"葛飾区":{"avg":17751,"min":10780,"max":49896,"total":190,"avail":25,"availRate":13},"江戸川区":{"avg":19283,"min":5273,"max":35640,"total":89,"avail":10,"availRate":11}};
 
 // 相場ランク別の色（株価風：高い=赤系・安い=緑系）
@@ -1885,17 +2246,17 @@ function highlightText(text, query) {
 // TAB SWITCHING
 // ============================================================
 function switchTab(tab) {
-  ['list_view','owner_view','column_view','heatmap_view'].forEach(v => {
+  ['list_view','column_view','heatmap_view','corp_view'].forEach(v => {
     const el = document.getElementById(v);
     if (el) el.style.display = (v === tab+'_view') ? '' : 'none';
   });
-  ['search','owner','column','heatmap'].forEach(t => {
+  ['search','column','heatmap','corp'].forEach(t => {
     document.getElementById('tab_'+t)?.classList.toggle('active', t===tab);
   });
   document.getElementById('btn_back').style.display = 'none';
-  if (tab === 'owner') initOwnerCounseling();
   if (tab === 'column') renderColumnList();
   if (tab === 'heatmap') renderHeatmap();
+  if (tab === 'corp') renderCorpPage();
 }
 
 // ============================================================
@@ -1956,411 +2317,6 @@ const COUNSELING_STEPS = [
     skipLabel: 'わからない・未設定'
   },
 ];
-
-let counselingAnswers = {};
-let counselingStep = 0;
-
-function initOwnerCounseling() {
-  counselingAnswers = {};
-  counselingStep = 0;
-  renderCounselingStep();
-}
-
-function renderCounselingStep() {
-  const el = document.getElementById('owner_counseling');
-  const step = COUNSELING_STEPS[counselingStep];
-  const total = COUNSELING_STEPS.length;
-  const progress = Math.round((counselingStep / total) * 100);
-
-  // ヘッダー（初回のみ）
-  const headerHTML = counselingStep === 0 ? `
-    <div style="text-align:center;margin-bottom:28px">
-      <div style="width:56px;height:56px;background:var(--a);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px;font-weight:900;color:#fff">P</div>
-      <div style="font-size:20px;font-weight:900;color:var(--t);margin-bottom:6px">オーナー無料カウンセリング</div>
-      <div style="font-size:13px;color:var(--t2);line-height:1.6">いくつかの質問に答えるだけで<br>AIがあなたの駐車場を無料診断します</div>
-    </div>` : '';
-
-  el.innerHTML = `
-    ${headerHTML}
-    <!-- プログレスバー -->
-    <div style="margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-size:11px;font-weight:700;color:var(--t3)">STEP ${counselingStep+1} / ${total}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--a)">${progress}% 完了</div>
-      </div>
-      <div style="height:4px;background:var(--b);border-radius:4px;overflow:hidden">
-        <div style="height:100%;background:var(--a);border-radius:4px;width:${progress}%;transition:width .4s ease"></div>
-      </div>
-    </div>
-
-    <!-- 質問カード -->
-    <div class="fadeUp" style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 24px rgba(13,43,78,.08);border:1px solid var(--b);margin-bottom:16px">
-      <!-- 回答済みの答えを表示 -->
-      ${counselingStep > 0 ? `
-      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--b)">
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          ${Object.entries(counselingAnswers).map(([k,v])=>`
-            <div style="display:flex;align-items:center;gap:6px;background:var(--al);border-radius:20px;padding:5px 12px">
-              <div style="font-size:11px;color:var(--t3)">${COUNSELING_STEPS.find(s=>s.id===k)?.q.slice(0,10)}...</div>
-              <div style="font-size:12px;font-weight:700;color:var(--a)">${v}</div>
-            </div>`).join('')}
-        </div>
-      </div>` : ''}
-
-      <div style="font-size:18px;font-weight:800;color:var(--t);margin-bottom:4px;line-height:1.4">${step.q}</div>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:20px">${step.sub}</div>
-
-      ${step.type === 'choice' ? `
-      <div style="display:flex;flex-direction:column;gap:10px">
-        ${step.choices.map(c=>`
-          <button onclick="selectCounseling('${step.id}','${c.value}')"
-            style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:1.5px solid var(--b);background:#fff;text-align:left;cursor:pointer;transition:all .15s;font-family:inherit;width:100%"
-            onmouseover="this.style.borderColor='var(--a)';this.style.background='var(--al)'"
-            onmouseout="this.style.borderColor='var(--b)';this.style.background='#fff'">
-            <div style="font-size:24px;flex-shrink:0">${c.icon}</div>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--t)">${c.label}</div>
-              ${c.desc?`<div style="font-size:11px;color:var(--t3);margin-top:2px">${c.desc}</div>`:''}
-            </div>
-            <div style="margin-left:auto;font-size:16px;color:var(--t3)">→</div>
-          </button>`).join('')}
-      </div>` : ''}
-
-      ${step.type === 'input' ? `
-      <div>
-        <input id="${step.inputId}" type="text" placeholder="${step.placeholder}"
-          style="width:100%;border:1.5px solid var(--b);border-radius:12px;padding:14px 16px;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s"
-          onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'"
-          onkeydown="if(event.key==='Enter')submitCounselingInput('${step.id}','${step.inputId}')">
-        <button onclick="submitCounselingInput('${step.id}','${step.inputId}')"
-          style="width:100%;margin-top:12px;padding:14px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-          次へ →
-        </button>
-      </div>` : ''}
-
-      ${step.type === 'input_optional' ? `
-      <div>
-        <input id="${step.inputId}" type="number" placeholder="${step.placeholder}"
-          style="width:100%;border:1.5px solid var(--b);border-radius:12px;padding:14px 16px;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s"
-          onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--b)'"
-          onkeydown="if(event.key==='Enter')submitCounselingInput('${step.id}','${step.inputId}')">
-        <div style="display:flex;gap:10px;margin-top:12px">
-          <button onclick="skipCounselingStep('${step.id}')"
-            style="flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--b);background:#fff;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit">
-            ${step.skipLabel}
-          </button>
-          <button onclick="submitCounselingInput('${step.id}','${step.inputId}')"
-            style="flex:2;padding:13px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-            次へ →
-          </button>
-        </div>
-      </div>` : ''}
-    </div>
-
-    ${counselingStep > 0 ? `<button onclick="backCounselingStep()" style="background:transparent;border:none;color:var(--t3);font-size:12px;cursor:pointer;font-family:inherit">← 前の質問に戻る</button>` : ''}`;
-}
-
-function selectCounseling(id, value) {
-  counselingAnswers[id] = value;
-  counselingStep++;
-  if (counselingStep >= COUNSELING_STEPS.length) {
-    runCounselingDiagnosis();
-  } else {
-    renderCounselingStep();
-  }
-}
-
-function submitCounselingInput(id, inputId) {
-  const val = document.getElementById(inputId)?.value.trim();
-  if (!val) { showToast('⚠ 入力してください'); return; }
-  counselingAnswers[id] = val;
-  counselingStep++;
-  if (counselingStep >= COUNSELING_STEPS.length) {
-    runCounselingDiagnosis();
-  } else {
-    renderCounselingStep();
-  }
-}
-
-function skipCounselingStep(id) {
-  counselingAnswers[id] = '未回答';
-  counselingStep++;
-  if (counselingStep >= COUNSELING_STEPS.length) {
-    runCounselingDiagnosis();
-  } else {
-    renderCounselingStep();
-  }
-}
-
-function backCounselingStep() {
-  if (counselingStep > 0) {
-    const prevStep = COUNSELING_STEPS[counselingStep - 1];
-    delete counselingAnswers[prevStep.id];
-    counselingStep--;
-    renderCounselingStep();
-  }
-}
-
-async function runCounselingDiagnosis() {
-  const el = document.getElementById('owner_counseling');
-  el.innerHTML = `
-    <div style="text-align:center;padding:60px 20px">
-      <div style="width:56px;height:56px;border:4px solid var(--al);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px"></div>
-      <div style="font-size:16px;font-weight:700;color:var(--t);margin-bottom:8px">AIが診断中です...</div>
-      <div style="font-size:13px;color:var(--t2)">回答内容をもとに周辺データを分析しています</div>
-    </div>`;
-
-  const addr = counselingAnswers.area || '';
-  const currentPrice = counselingAnswers.price !== '未回答' ? parseInt(counselingAnswers.price) || 0 : 0;
-  const nearby = getNearbyData(addr, '', '');
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `あなたは月極駐車場の専門コンサルタントです。オーナーへの診断結果をJSONで返してください（マークダウン不要）:
-{"avgPrice":周辺平均月額,"recommendedPrice":推奨月額,"demand":"高い/普通/低い","comment":"カウンセリング回答を踏まえた総合アドバイス（80字以内）","tips":["具体的アドバイス1(30字以内)","具体的アドバイス2(30字以内)","具体的アドバイス3(30字以内)"],"urgency":"高/中/低"}`,
-        messages: [{ role: 'user', content:
-          `台数:${counselingAnswers.slots} 状況:${counselingAnswers.status} 課題:${counselingAnswers.concern} エリア:${addr} 現在月額:${currentPrice||'未設定'}円\n周辺${nearby.count}件 平均¥${nearby.avg.toLocaleString()} 空き率${nearby.availRate}%`
-        }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content[0].text.replace(/```json|```/g,'').trim();
-    const result = JSON.parse(text);
-    renderCounselingResult(result, nearby, currentPrice);
-  } catch(e) {
-    renderCounselingResult(null, nearby, currentPrice);
-  }
-}
-
-function renderCounselingResult(result, nearby, currentPrice) {
-  const el = document.getElementById('owner_counseling');
-  const r = result || {};
-  const avgP = r.avgPrice || nearby.avg;
-  const recP = r.recommendedPrice || nearby.avg;
-  const demandColor = r.demand==='高い'?'#1a5c3a':r.demand==='低い'?'#e05050':'#c9a84c';
-  const demandBg = r.demand==='高い'?'#e8f5ee':r.demand==='低い'?'#fef0f0':'#fff8e8';
-  const urgencyColor = r.urgency==='高'?'#e05050':r.urgency==='中'?'#c9a84c':'#1a5c3a';
-
-  // 現在価格との比較
-  const priceDiff = currentPrice > 0 ? recP - currentPrice : null;
-  const yearDiff = priceDiff ? priceDiff * 12 : null;
-
-  el.innerHTML = `
-    <!-- 完了バナー -->
-    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:20px;padding:20px 24px;margin-bottom:20px;text-align:center">
-      <div style="font-size:24px;margin-bottom:8px">✅</div>
-      <div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px">診断が完了しました</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.7)">${counselingAnswers.area||'入力エリア'}周辺 ${nearby.count}件のデータをもとに分析</div>
-    </div>
-
-    <!-- 回答サマリー -->
-    <div style="background:#fff;border-radius:16px;padding:18px 20px;border:1px solid var(--b);margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">カウンセリング回答</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        ${Object.entries(counselingAnswers).filter(([k])=>k!=='price'&&k!=='area').map(([k,v])=>`
-          <div style="background:var(--bg);border-radius:10px;padding:10px 12px">
-            <div style="font-size:10px;color:var(--t3);margin-bottom:3px">${COUNSELING_STEPS.find(s=>s.id===k)?.q.slice(0,12)}...</div>
-            <div style="font-size:13px;font-weight:700;color:var(--t)">${v}</div>
-          </div>`).join('')}
-      </div>
-    </div>
-
-    <!-- 診断結果 -->
-    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--b);margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <div style="font-size:15px;font-weight:800;color:var(--t);flex:1">AI診断結果</div>
-        ${r.demand?`<span style="background:${demandBg};color:${demandColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px">需要：${r.demand}</span>`:''}
-        ${r.urgency?`<span style="background:${urgencyColor}15;color:${urgencyColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px">優先度：${r.urgency}</span>`:''}
-      </div>
-
-      <!-- 価格比較 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div style="background:var(--bg);border-radius:12px;padding:14px;text-align:center">
-          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">周辺平均月額</div>
-          <div style="font-size:22px;font-weight:900;color:var(--t2)">¥${avgP.toLocaleString()}</div>
-        </div>
-        <div style="background:var(--al);border-radius:12px;padding:14px;text-align:center;border:1.5px solid var(--am)">
-          <div style="font-size:10px;color:var(--a);font-weight:700;margin-bottom:4px">AI推奨月額</div>
-          <div style="font-size:22px;font-weight:900;color:var(--a)">¥${recP.toLocaleString()}</div>
-        </div>
-      </div>
-
-      ${priceDiff !== null ? `
-      <div style="background:${priceDiff>0?'#fff8e8':'#e8f5ee'};border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:13px;color:${priceDiff>0?'#7a5900':'#1a5c3a'};font-weight:700">
-          現在より月${priceDiff>0?'▲':'▼'}¥${Math.abs(priceDiff).toLocaleString()}
-        </div>
-        <div style="font-size:14px;font-weight:900;color:${priceDiff>0?'#c9a84c':'#1a5c3a'}">
-          年間${priceDiff>0?'+':''}¥${Math.abs(yearDiff).toLocaleString()}
-        </div>
-      </div>` : ''}
-
-      ${r.comment?`
-      <div style="background:linear-gradient(135deg,var(--al),#dde4f0);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-        <div style="font-size:10px;font-weight:700;color:var(--a);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">AIコメント</div>
-        <div style="font-size:13px;color:var(--t);line-height:1.7">${r.comment}</div>
-      </div>`:''}
-
-      ${r.tips&&r.tips.length?`
-      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:10px">具体的なアドバイス</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${r.tips.map((tip,i)=>`
-          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;background:var(--bg);border-radius:10px">
-            <span style="background:var(--a);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0">0${i+1}</span>
-            <span style="font-size:13px;color:var(--t);line-height:1.5">${tip}</span>
-          </div>`).join('')}
-      </div>`:''}
-    </div>
-
-    <!-- CTA -->
-    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:18px;padding:22px 20px;text-align:center;margin-bottom:16px">
-      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">無料でオーナー登録する</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:16px">掲載・管理・電子契約まで一気通貫で対応します</div>
-      <button style="background:var(--gold);border:none;border-radius:12px;padding:13px 32px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-        今すぐ登録する →
-      </button>
-    </div>
-
-    <button onclick="initOwnerCounseling()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--b);background:#fff;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit">
-      もう一度診断する
-    </button>`;
-}
-
-// switchTabのowner切り替えを更新
-function useOwnerLocation() {
-  if (!navigator.geolocation) { alert('位置情報が利用できません'); return; }
-  const btn = event.target;
-  btn.textContent = '取得中...';
-  navigator.geolocation.getCurrentPosition(pos => {
-    btn.textContent = '現在地';
-    state._ownerLat = pos.coords.latitude;
-    state._ownerLng = pos.coords.longitude;
-    const inputEl = document.getElementById('owner_addr_new');
-    if (inputEl) inputEl.value = '現在地周辺';
-  }, () => { btn.textContent = '現在地'; });
-}
-
-// 旧関数との互換性
-function runOwnerDiagnosis() {}
-function diagnosis_btn() {}
-
-
-
-async function runOwnerDiagnosis() {
-  const addr = document.getElementById('owner_addr').value.trim();
-  if (!addr) { alert('住所・エリアを入力してください'); return; }
-  const size = document.getElementById('owner_size').value;
-  const type = document.getElementById('owner_type').value;
-
-  const btn = document.getElementById('diagnosis_btn');
-  btn.textContent = '⏳ 診断中...'; btn.disabled = true;
-
-  const nearby = getNearbyData(addr, size, type);
-  const resultEl = document.getElementById('owner_result');
-  resultEl.style.display = '';
-  resultEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--t2)">
-    <div style="font-size:32px;margin-bottom:12px">⏳</div>
-    <div style="font-weight:600">AIが診断中です...</div>
-  </div>`;
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `あなたは月極駐車場の専門家です。オーナーに対して駐車場の空き枠診断を行ってください。
-JSONのみで回答してください（マークダウン不要）:
-{"avgPrice":周辺平均月額,"minPrice":最安値,"maxPrice":最高値,"count":周辺件数,"availRate":空き率,"recommendedPrice":推奨月額,"demand":"高い/普通/低い","comment":"オーナーへの総合コメント60字以内","tips":["アドバイス1(30字以内)","アドバイス2(30字以内)","アドバイス3(30字以内)"]}`,
-        messages: [{ role: 'user', content: `住所: ${addr}\n車種: ${size||'未定'}\nタイプ: ${type||'未定'}\n周辺${nearby.count}件 平均¥${nearby.avg.toLocaleString()} 空き率${nearby.availRate}% 主な駅:${nearby.stations.join('・')}` }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content[0].text.replace(/```json|```/g,'').trim();
-    const result = JSON.parse(text);
-    renderOwnerResult(addr, result, nearby);
-  } catch(e) {
-    renderOwnerResult(addr, null, nearby);
-  }
-  btn.textContent = '✨ AI診断スタート'; btn.disabled = false;
-}
-
-function getNearbyData(addr, size, type) {
-  const tokens = tokenize(addr);
-  let candidates = state.properties.filter(p => {
-    const target = p.address + p.ward + p.station;
-    return tokens.some(t => t.length >= 2 && target.includes(t));
-  });
-  if (size) candidates = candidates.filter(p => !p.size || p.size === size);
-  if (type) candidates = candidates.filter(p => !p.type || p.type === type);
-  if (candidates.length < 5) candidates = state.properties.filter(p => p.price > 0).slice(0, 100);
-  const priced = candidates.filter(p => p.price > 0);
-  const prices = priced.map(p => p.price);
-  const avail = candidates.filter(p => p.available).length;
-  const stations = [...new Set(candidates.map(p=>p.station).filter(Boolean))].slice(0,3);
-  return {
-    count: candidates.length,
-    avg: prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0,
-    min: prices.length ? Math.min(...prices) : 0,
-    max: prices.length ? Math.max(...prices) : 0,
-    avail, availRate: candidates.length ? Math.round(avail/candidates.length*100) : 0,
-    stations,
-  };
-}
-
-function renderOwnerResult(addr, result, nearby) {
-  const el = document.getElementById('owner_result');
-  const r = result || {};
-  const demandColor = r.demand==='高い'?'#1a5c3a':r.demand==='低い'?'#e05050':'#c9a84c';
-  const demandBg = r.demand==='高い'?'#e8f5ee':r.demand==='低い'?'#fef0f0':'#fff8e8';
-
-  el.innerHTML = `
-    <div style="background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(13,43,78,.08);border:1px solid var(--b);margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <h3 style="font-size:18px;font-weight:800;color:var(--t);flex:1">📊 診断結果</h3>
-        ${r.demand?`<span style="background:${demandBg};color:${demandColor};font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px">需要：${r.demand}</span>`:''}
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
-        ${statCard('周辺平均月額','¥'+(r.avgPrice||nearby.avg).toLocaleString(),'周辺相場')}
-        ${statCard('推奨月額','¥'+(r.recommendedPrice||nearby.avg).toLocaleString(),'AI推奨価格')}
-        ${statCard('周辺物件数',(r.count||nearby.count)+'件','半径2km以内')}
-        ${statCard('空き率',(r.availRate||nearby.availRate)+'%','現在の需給')}
-      </div>
-      ${r.comment?`<div style="background:linear-gradient(135deg,#e8edf5,#dde4f0);border-radius:14px;padding:16px 18px;margin-bottom:20px">
-        <div style="font-size:11px;font-weight:700;color:var(--a);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">✨ AIコメント</div>
-        <div style="font-size:14px;color:var(--t);line-height:1.7">${r.comment}</div>
-      </div>`:''}
-      ${r.tips&&r.tips.length?`<div>
-        <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:12px">💡 改善アドバイス</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${r.tips.map((tip,i)=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg);border-radius:12px">
-            <span style="background:var(--a);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0">0${i+1}</span>
-            <span style="font-size:13px;color:var(--t);line-height:1.5">${tip}</span>
-          </div>`).join('')}
-        </div>
-      </div>`:''}
-    </div>
-    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:20px;padding:24px;text-align:center">
-      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:6px">オーナー登録で詳細診断・契約サポートが受けられます</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:16px">専門スタッフがサポートします</div>
-      <button style="background:var(--gold);border:none;border-radius:12px;padding:13px 32px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">📝 無料でオーナー登録する</button>
-    </div>`;
-}
-
-function statCard(label, value, sub) {
-  return `<div style="background:var(--bg);border-radius:12px;padding:14px 16px;text-align:center">
-    <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${label}</div>
-    <div style="font-size:20px;font-weight:800;color:var(--a);letter-spacing:-.5px">${value}</div>
-    <div style="font-size:10px;color:var(--t3);margin-top:2px">${sub}</div>
-  </div>`;
-}
-
 function renderList() {
   let filtered = getFiltered();
 
@@ -2481,7 +2437,6 @@ function showDetail(id) {
   if (!p) return;
   state.selectedProp = p;
   document.getElementById('list_view').style.display = 'none';
-  document.getElementById('owner_view').style.display = 'none';
   document.getElementById('btn_back').style.display = '';
   document.getElementById('hdr_tabs').style.display = 'none';
 
