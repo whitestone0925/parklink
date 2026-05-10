@@ -178,6 +178,7 @@ button,input,select,textarea{font-family:inherit;}
 .fav-btn:hover{transform:scale(1.15);}
 .fav-btn.on{background:#fff0f0;}
 
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 /* SORT TABS */
 .sort-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 16px;scrollbar-width:none;-ms-overflow-style:none;}
@@ -553,9 +554,9 @@ button,input,select,textarea{font-family:inherit;}
         契約前に必ず物件オーナー・管理会社へご確認ください。<br>
         © 2025 ParkLink / 株式会社CSBパートナーズ
       </div>
-      </div>
+    </div>
+    </div><!-- end list_view -->
 
-    <!-- オーナー診断ビュー（カウンセリング形式） -->
     <!-- 法人ビュー -->
     <div id="corp_view" style="display:none">
       <div style="max-width:860px;margin:0 auto;padding:32px 20px" id="corp_body"></div>
@@ -612,7 +613,7 @@ button,input,select,textarea{font-family:inherit;}
   <div class="chat-win" id="chat_win" style="display:none">
     <div class="chat-hdr">
       <div class="chat-hdr-icon">🅿</div>
-      <div><div class="chat-hdr-title">ParkLink AI</div><div class="chat-hdr-sub">条件を伝えて物件を探す</div></div>
+      <div><div class="chat-hdr-title">アイ</div><div class="chat-hdr-sub">駐車場探しをお手伝いします</div></div>
       <button class="chat-close" onclick="toggleChat()">✕</button>
     </div>
     <div class="chat-msgs" id="chat_msgs"></div>
@@ -1426,6 +1427,75 @@ function renderCorpPage() {
   else renderCorpResults();
 }
 
+async function corpAiSearch() {
+  const input = document.getElementById('corp_ai_input')?.value.trim();
+  if (!input) { showToast('⚠ 条件を入力してください'); return; }
+
+  const btn = document.getElementById('corp_ai_btn');
+  const status = document.getElementById('corp_ai_status');
+  btn.textContent = '解析中...'; btn.disabled = true;
+  status.textContent = '🤖 AIが条件を解析しています...';
+  status.style.color = 'var(--a)';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: 'You extract corporate parking search conditions from Japanese text and return ONLY a JSON object with no markdown: {"count":number,"usage":"営業車 or 役員車 or 通勤用 or 配送車 or 社用車","area":"string","budget":number or 0,"carType":"軽自動車 or コンパクト or 普通車 or ワンボックス or empty string","dept":"string or empty"}',
+        messages: [{ role: 'user', content: input }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content[0].text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(raw);
+
+    // フォームに反映
+    if (parsed.count >= 1) {
+      corpState.count = parsed.count;
+      document.getElementById('corp_count').textContent = parsed.count;
+    }
+    if (parsed.usage) {
+      const el = document.getElementById('corp_usage');
+      if (el) { el.value = parsed.usage; corpState.usage = parsed.usage; }
+    }
+    if (parsed.area) {
+      const el = document.getElementById('corp_area');
+      if (el) { el.value = parsed.area; corpState.area = parsed.area; }
+    }
+    if (parsed.budget > 0) {
+      const el = document.getElementById('corp_budget');
+      if (el) { el.value = parsed.budget; corpState.budget = parsed.budget; updateCorpCost(); }
+    }
+    if (parsed.carType) {
+      const el = document.getElementById('corp_cartype');
+      if (el) { el.value = parsed.carType; corpState.carType = parsed.carType; }
+    }
+    if (parsed.dept) {
+      const el = document.getElementById('corp_dept');
+      if (el) { el.value = parsed.dept; corpState.dept = parsed.dept; }
+    }
+
+    const parts = [parsed.count+'台', parsed.usage, parsed.area, parsed.budget?'予算¥'+parsed.budget.toLocaleString():'', parsed.carType].filter(Boolean);
+    status.innerHTML = '✅ ' + parts.join(' · ');
+    status.style.color = '#1a5c3a';
+
+    // 0.5秒後に自動検索
+    setTimeout(() => searchCorpParking(), 500);
+
+  } catch(e) {
+    // エラー時はキーワードのみでフォールバック検索
+    status.textContent = 'キーワードで検索します...';
+    status.style.color = 'var(--t3)';
+    const el = document.getElementById('corp_area');
+    if (el) { el.value = input; corpState.area = input; }
+    setTimeout(() => searchCorpParking(), 300);
+  }
+  btn.textContent = 'AI解析'; btn.disabled = false;
+}
+
 function renderCorpForm() {
   const el = document.getElementById('corp_body');
   el.innerHTML = `
@@ -1451,7 +1521,31 @@ function renderCorpForm() {
 
     <!-- 入力フォーム -->
     <div style="background:#fff;border-radius:20px;padding:24px;border:1px solid var(--b);margin-bottom:16px">
-      <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:20px">🔍 条件を入力してください</div>
+      <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:4px">🔍 条件を入力してください</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:16px">AIに話しかけるか、下のフォームに直接入力できます</div>
+
+      <!-- AI自然言語入力 -->
+      <div style="background:linear-gradient(135deg,var(--al),#dde4f0);border-radius:14px;padding:16px;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--a);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">✨ AIに話しかける</div>
+        <div style="display:flex;gap:8px">
+          <input id="corp_ai_input" type="text"
+            placeholder="例：新宿で営業車4台、予算3万以下でお願いします"
+            style="flex:1;border:1.5px solid var(--am);border-radius:10px;padding:11px 14px;font-size:13px;outline:none;font-family:inherit;background:#fff"
+            onfocus="this.style.borderColor='var(--a)'" onblur="this.style.borderColor='var(--am)'"
+            onkeydown="if(event.key==='Enter')corpAiSearch()">
+          <button onclick="corpAiSearch()" id="corp_ai_btn"
+            style="padding:11px 18px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+            AI解析
+          </button>
+        </div>
+        <div id="corp_ai_status" style="font-size:11px;color:var(--a);margin-top:8px;min-height:16px"></div>
+        <!-- サンプル -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+          ${['渋谷で普通車3台、屋根付き','港区で役員車2台、予算5万','新宿で営業車10台まとめて'].map(s=>`
+            <button onclick="document.getElementById('corp_ai_input').value='${s}';corpAiSearch()"
+              style="font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--am);background:#fff;color:var(--a);cursor:pointer;font-family:inherit">${s}</button>`).join('')}
+        </div>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
         <!-- 台数 -->
@@ -1538,20 +1632,6 @@ function renderCorpForm() {
         style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--a);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
         候補物件を検索する →
       </button>
-    </div>
-
-    <!-- 特徴 -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      ${[
-        ['📋','まとめて問い合わせ','複数物件を一括で問い合わせできます'],
-        ['💰','コスト自動試算','月額×台数×年間コストを即計算'],
-        ['📊','比較表で確認','物件を横並びで比較できます'],
-      ].map(([icon,t,d])=>`
-        <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid var(--b);text-align:center">
-          <div style="font-size:24px;margin-bottom:8px">${icon}</div>
-          <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:4px">${t}</div>
-          <div style="font-size:11px;color:var(--t2);line-height:1.5">${d}</div>
-        </div>`).join('')}
     </div>`;
 }
 
@@ -1568,14 +1648,13 @@ function updateCorpCost() {
 }
 
 function searchCorpParking() {
-  const area = document.getElementById('corp_area')?.value.trim();
-  const usage = document.getElementById('corp_usage')?.value;
-  const budget = parseInt(document.getElementById('corp_budget')?.value) || 0;
-  const carType = document.getElementById('corp_cartype')?.value;
-  const dept = document.getElementById('corp_dept')?.value;
+  const area = document.getElementById('corp_area')?.value.trim() || corpState.area;
+  const usage = document.getElementById('corp_usage')?.value || corpState.usage;
+  const budget = parseInt(document.getElementById('corp_budget')?.value) || corpState.budget || 0;
+  const carType = document.getElementById('corp_cartype')?.value || corpState.carType;
+  const dept = document.getElementById('corp_dept')?.value || corpState.dept;
 
   if (!area) { showToast('⚠ エリアを入力してください'); return; }
-  if (!usage) { showToast('⚠ 用途を選択してください'); return; }
 
   corpState = { ...corpState, area, usage, budget, carType, dept, step: 'results' };
 
@@ -1654,11 +1733,14 @@ function renderCorpResults() {
     </div>
 
     <!-- まとめて問い合わせボタン -->
-    <div id="corp_bulk_bar" style="display:none;position:sticky;top:56px;z-index:50;background:#fff;border:1.5px solid var(--a);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(13,43,78,.15)">
-      <div style="font-size:13px;font-weight:700;color:var(--a);flex:1"><span id="corp_sel_count">0</span>件選択中</div>
-      <button onclick="bulkInquiry()" style="padding:10px 20px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-        まとめて問い合わせ →
-      </button>
+    <div id="corp_bulk_bar" style="display:none;position:sticky;top:56px;z-index:50;background:#fff;border:1.5px solid var(--a);border-radius:16px;padding:16px 20px;margin-bottom:16px;box-shadow:0 4px 20px rgba(13,43,78,.15)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:800;color:var(--a)"><span id="corp_sel_count">0</span>件選択中の試算</div>
+        <button onclick="bulkInquiry()" style="padding:10px 20px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+          まとめて問い合わせ →
+        </button>
+      </div>
+      <div id="corp_sel_cost"></div>
     </div>
 
     <!-- 物件リスト（表形式） -->
@@ -1691,8 +1773,11 @@ function renderCorpResults() {
                   ${p.station?p.station+'駅<br>徒歩'+p.walk+'分':esc(p.ward||'')}
                 </td>
                 <td style="padding:10px 12px;white-space:nowrap">
-                  ${p.price>0?`<span style="font-size:14px;font-weight:900;color:var(--a)">¥${p.price.toLocaleString()}</span><span style="font-size:10px;color:var(--t3)">/月</span>`:'<span style="color:var(--t3)">要問合せ</span>'}
-                  ${p.price>0&&r.count>1?`<div style="font-size:10px;color:var(--t3)">${r.count}台 ¥${(p.price*r.count).toLocaleString()}</div>`:''}
+                  ${p.price>0?`
+                    <div style="font-size:14px;font-weight:900;color:var(--a)">¥${p.price.toLocaleString()}<span style="font-size:10px;color:var(--t3);font-weight:400">/月</span></div>
+                    <div style="font-size:11px;color:var(--t2);margin-top:2px">${r.count}台 → <span style="font-weight:700;color:var(--a)">¥${(p.price*r.count).toLocaleString()}</span>/月</div>
+                    <div style="font-size:10px;color:var(--t3)">年間 ¥${(p.price*r.count*12).toLocaleString()}</div>
+                  `:'<span style="color:var(--t3)">要問合せ</span>'}
                 </td>
                 <td style="padding:10px 12px">
                   <span style="background:${p.available?'#e8f5ee':'var(--bg)'};color:${p.available?'#1a5c3a':'var(--t3)'};font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">
@@ -1748,9 +1833,34 @@ function updateCorpBulkBar() {
   const bar = document.getElementById('corp_bulk_bar');
   const cnt = document.getElementById('corp_sel_count');
   if (!bar || !cnt) return;
-  const size = window._corpSelected?.size || 0;
-  bar.style.display = size > 0 ? 'flex' : 'none';
+  const selected = window._corpSelected || new Set();
+  const size = selected.size;
+  bar.style.display = size > 0 ? '' : 'none';
   cnt.textContent = size;
+
+  if (size > 0) {
+    const selectedProps = corpState.results.filter(p => selected.has(p.id));
+    const pricedProps = selectedProps.filter(p => p.price > 0);
+    const totalMonthly = pricedProps.reduce((s,p) => s + p.price * corpState.count, 0);
+    const totalYearly = totalMonthly * 12;
+
+    const costEl = document.getElementById('corp_sel_cost');
+    if (costEl) {
+      costEl.innerHTML = `
+        <!-- 物件別カード -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${selectedProps.map(p => `
+            <div style="background:var(--al);border-radius:12px;padding:10px 14px;min-width:140px;flex:1;border:1.5px solid var(--am)">
+              <div style="font-size:11px;font-weight:700;color:var(--t);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:6px">${p.station?p.station+'駅 徒歩'+p.walk+'分':p.ward||''}</div>
+              ${p.price>0?`
+                <div style="font-size:15px;font-weight:900;color:var(--a)">¥${(p.price*corpState.count).toLocaleString()}<span style="font-size:10px;font-weight:400;color:var(--t3)">/月</span></div>
+                <div style="font-size:10px;color:var(--t3)">年間 ¥${(p.price*corpState.count*12).toLocaleString()}</div>
+              `:'<div style="font-size:12px;color:var(--t3)">要問合せ</div>'}
+            </div>`).join('')}
+        </div>`;
+    }
+  }
 }
 
 function bulkInquiry() {
@@ -1790,11 +1900,45 @@ function demandSignal(d) {
   return { icon:'📊', label:'安定', color:'#27ae60' };
 }
 
-let heatmapSort = 'avg';
+let heatmapBudget = 100000;
+
+function updateBudgetFilter(val) {
+  heatmapBudget = parseInt(val);
+  const valEl = document.getElementById('budget_val');
+  if (valEl) valEl.textContent = '¥' + parseInt(val).toLocaleString();
+
+  // ブロックをリアルタイムでフィルタリング
+  Object.entries(WARD_STATS).forEach(([ward, d]) => {
+    const id = 'ward_block_' + ward.replace(/[^\w]/g,'_');
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (d.avg > heatmapBudget) {
+      el.style.opacity = '0.25';
+      el.style.filter = 'grayscale(80%)';
+    } else {
+      el.style.opacity = '1';
+      el.style.filter = 'none';
+    }
+  });
+}
+
+
 let selectedWard = null;
+let heatmapSort = 'avg';
+let heatmapMode = 'search';
 
 function renderHeatmap() {
   const el = document.getElementById('heatmap_body');
+  if (!el) return;
+
+  if (heatmapMode === 'search') {
+    renderHeatmapSearch(el);
+  } else {
+    renderHeatmapInvest(el);
+  }
+}
+
+function renderHeatmapSearch(el) {
   const wards = Object.entries(WARD_STATS);
   const sorted = [...wards].sort((a,b) => {
     if (heatmapSort === 'avg') return b[1].avg - a[1].avg;
@@ -1802,116 +1946,218 @@ function renderHeatmap() {
     if (heatmapSort === 'total') return b[1].total - a[1].total;
     return b[1].avg - a[1].avg;
   });
-  const maxAvg = Math.max(...wards.map(w=>w[1].avg));
-  const minAvg = Math.min(...wards.map(w=>w[1].avg));
   const maxTotal = Math.max(...wards.map(w=>w[1].total));
   const totalProps = wards.reduce((s,[,d])=>s+d.total,0);
   const totalAvail = wards.reduce((s,[,d])=>s+d.avail,0);
+  const allAvg = Math.round(wards.reduce((s,[,d])=>s+(d.avg*d.total),0)/totalProps);
+
+  // C. 前月比ダミー
+  const trendData = {};
+  Object.keys(WARD_STATS).forEach(ward => {
+    const seed = ward.charCodeAt(0) + ward.charCodeAt(1);
+    trendData[ward] = ((seed % 11) - 5) * 0.4;
+  });
+
+  // F. 穴場TOP3
+  const bargainList = Object.entries(WARD_STATS)
+    .map(([w,d]) => ({ ward:w, d, score:(d.availRate/10)+(1-d.avg/50000)*3 }))
+    .sort((a,b) => b.score - a.score).slice(0,3);
+  const bargainWards = new Set(bargainList.map(x=>x.ward));
 
   el.innerHTML = `
+  <div style="background:#0d1117;min-height:100vh;padding:0;margin:-32px -20px;">
+
     <!-- ヘッダー -->
-    <div style="margin-bottom:20px">
-      <div style="font-size:22px;font-weight:900;color:var(--t);margin-bottom:4px">ParkScope — 東京23区 相場レーダー</div>
-      <div style="font-size:12px;color:var(--t2)">ParkLinkの実データ ${totalProps.toLocaleString()}件をもとに集計 · 2026年5月時点</div>
-    </div>
-
-    <!-- サマリーカード -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-      ${[
-        ['都内平均月額', '¥'+ Math.round(wards.reduce((s,[,d])=>s+(d.avg*d.total),0)/totalProps).toLocaleString(), '#0d2b4e'],
-        ['空きあり物件', totalAvail.toLocaleString()+'件', '#1a5c3a'],
-        ['最高値エリア', '港区 ¥47,063', '#c0392b'],
-      ].map(([l,v,c])=>`
-        <div style="background:#fff;border-radius:12px;padding:12px 14px;border:1px solid var(--b);text-align:center">
-          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">${l}</div>
-          <div style="font-size:15px;font-weight:900;color:${c}">${v}</div>
-        </div>`).join('')}
-    </div>
-
-    <!-- 凡例 -->
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-      <div style="font-size:11px;color:var(--t3);margin-right:4px">月額相場：</div>
-      ${[['42,000円〜','#c0392b'],['38〜42万','#e74c3c'],['33〜38万','#e67e22'],['28〜33万','#f39c12'],['23〜28万','#27ae60'],['〜23,000円','#16a085']].map(([l,c])=>`
-        <div style="display:flex;align-items:center;gap:4px">
-          <div style="width:12px;height:12px;border-radius:3px;background:${c}"></div>
-          <div style="font-size:10px;color:var(--t2)">${l}</div>
-        </div>`).join('')}
-    </div>
-
-    <!-- ソートボタン -->
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      ${[['avg','月額順'],['avail','空き率順'],['total','物件数順']].map(([k,l])=>`
-        <button onclick="heatmapSort='${k}';renderHeatmap()" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${heatmapSort===k?'var(--a)':'var(--b)'};background:${heatmapSort===k?'var(--a)':'#fff'};color:${heatmapSort===k?'#fff':'var(--t2)'};font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">${l}</button>`).join('')}
-    </div>
-
-    <!-- ヒートマップ本体 -->
-    <div id="heatmap_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px">
-      ${sorted.map(([ward,d],i)=>{
-        const c = wardColor(d.avg);
-        const sig = demandSignal(d);
-        const sizeRatio = 0.7 + (d.total / maxTotal) * 0.3;
-        const rank = i + 1;
-        return `
-        <div onclick="selectWardDetail('${ward}')"
-          style="background:${c.bg};border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;aspect-ratio:1"
-          onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.2)'"
-          onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none'">
-          <!-- ランク -->
-          <div style="position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;color:rgba(255,255,255,.5)">#${rank}</div>
-          <!-- 区名 -->
-          <div style="font-size:13px;font-weight:900;color:${c.text};margin-bottom:4px;line-height:1.2">${ward.replace('区','')}<span style="font-size:9px;opacity:.7">区</span></div>
-          <!-- 平均価格 -->
-          <div style="font-size:16px;font-weight:900;color:${c.text};letter-spacing:-.5px">¥${(d.avg/1000).toFixed(1)}<span style="font-size:10px;opacity:.8">万</span></div>
-          <!-- シグナル -->
-          <div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:4px">${sig.icon} ${sig.label}</div>
-          <!-- 物件数バー -->
-          <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.2)">
-            <div style="height:100%;background:rgba(255,255,255,.6);width:${Math.round(d.total/maxTotal*100)}%"></div>
+    <div style="background:#0d1117;border-bottom:1px solid #21262d;padding:16px 24px;position:sticky;top:56px;z-index:10">
+      <div style="max-width:900px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="font-size:20px;font-weight:900;color:#e6edf3;letter-spacing:-.5px">ParkScope</div>
+              <span style="background:#c9a84c;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">LIVE</span>
+            </div>
+            <div style="font-size:11px;color:#8b949e;margin-top:2px">東京23区 · 月極駐車場相場レーダー · ${totalProps.toLocaleString()}件のリアルデータ</div>
           </div>
-        </div>`;
-      }).join('')}
+          <!-- モード切り替え -->
+          <div style="display:flex;gap:0;background:#161b22;border-radius:10px;padding:3px;border:1px solid #30363d">
+            <button onclick="heatmapMode='search';renderHeatmap()" style="padding:7px 16px;border-radius:7px;border:none;background:#0d2b4e;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📊 相場</button>
+            <button onclick="heatmapMode='invest';renderHeatmap()" style="padding:7px 16px;border-radius:7px;border:none;background:transparent;color:#8b949e;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📈 投資</button>
+          </div>
+        </div>
+
+        <!-- ティッカー -->
+        <div style="overflow:hidden;margin-top:12px;white-space:nowrap">
+          <div style="display:inline-block;animation:ticker 25s linear infinite">
+            ${sorted.map(([ward,d])=>{
+              const trend = trendData[ward];
+              const col = trend>=0?'#f85149':'#3fb950';
+              return `<span style="margin-right:24px;font-size:11px;font-weight:600">
+                <span style="color:#8b949e">${ward} </span>
+                <span style="color:#e6edf3">¥${(d.avg/10000).toFixed(1)}万</span>
+                <span style="color:${col}"> ${trend>=0?'▲':'▼'}${Math.abs(trend).toFixed(1)}%</span>
+              </span>`;
+            }).join('')}
+            ${sorted.map(([ward,d])=>{
+              const trend = trendData[ward];
+              const col = trend>=0?'#f85149':'#3fb950';
+              return `<span style="margin-right:24px;font-size:11px;font-weight:600">
+                <span style="color:#8b949e">${ward} </span>
+                <span style="color:#e6edf3">¥${(d.avg/10000).toFixed(1)}万</span>
+                <span style="color:${col}"> ${trend>=0?'▲':'▼'}${Math.abs(trend).toFixed(1)}%</span>
+              </span>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 詳細パネル -->
-    <div id="ward_detail_panel"></div>
+    <div style="max-width:900px;margin:0 auto;padding:20px 24px">
 
-    <!-- 一覧テーブル -->
-    <div style="background:#fff;border-radius:16px;border:1px solid var(--b);overflow:hidden">
-      <div style="padding:14px 18px;border-bottom:1px solid var(--b);font-size:13px;font-weight:700;color:var(--t)">詳細データ一覧</div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead>
-            <tr style="background:var(--bg)">
-              ${['区名','平均月額','最安値','空き率','物件数','シグナル'].map(h=>`<th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--t2);white-space:nowrap">${h}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            ${sorted.map(([ward,d],i)=>{
-              const c = wardColor(d.avg);
-              const sig = demandSignal(d);
-              return `<tr style="border-bottom:1px solid var(--b);cursor:pointer" onclick="selectWardDetail('${ward}')"
-                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
-                <td style="padding:10px 12px;font-weight:700;color:var(--t)">${ward}</td>
-                <td style="padding:10px 12px">
-                  <span style="background:${c.bg};color:#fff;padding:3px 10px;border-radius:20px;font-weight:700;font-size:11px">¥${d.avg.toLocaleString()}</span>
-                </td>
-                <td style="padding:10px 12px;color:var(--t2)">¥${d.min.toLocaleString()}</td>
-                <td style="padding:10px 12px">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="width:40px;height:4px;background:var(--b);border-radius:2px;overflow:hidden">
-                      <div style="height:100%;background:${d.availRate>=15?'#e74c3c':'#27ae60'};width:${Math.min(d.availRate*3,100)}%"></div>
-                    </div>
-                    <span style="color:${d.availRate>=15?'#e74c3c':'var(--t2)'};font-weight:${d.availRate>=15?700:400}">${d.availRate}%</span>
-                  </div>
-                </td>
-                <td style="padding:10px 12px;color:var(--t2)">${d.total}件</td>
-                <td style="padding:10px 12px">${sig.icon} <span style="color:${sig.color};font-size:11px;font-weight:600">${sig.label}</span></td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
+      <!-- サマリーカード -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+        ${[
+          ['都内平均','¥'+allAvg.toLocaleString()+'/月','#58a6ff'],
+          ['空きあり',totalAvail+'件','#3fb950'],
+          ['最高値エリア','港区 ¥47,063','#f85149'],
+          ['最安値エリア','練馬区 ¥21,424','#3fb950'],
+        ].map(([l,v,c])=>`
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px">
+            <div style="font-size:10px;color:#8b949e;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">${l}</div>
+            <div style="font-size:15px;font-weight:900;color:${c}">${v}</div>
+          </div>`).join('')}
       </div>
-    </div>`;
+
+      <!-- B. 予算フィルター -->
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:14px;padding:16px 20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:700;color:#e6edf3">💰 予算フィルター</div>
+          <div style="font-size:14px;font-weight:900;color:#58a6ff">月額 <span id="budget_val">¥100,000</span> 以下</div>
+        </div>
+        <input type="range" id="budget_slider" min="10000" max="100000" step="1000" value="100000"
+          oninput="updateBudgetFilter(this.value)"
+          style="width:100%;accent-color:#58a6ff;height:4px;cursor:pointer;background:#30363d">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#8b949e;margin-top:6px">
+          <span>¥1万</span><span>¥3万</span><span>¥5万</span><span>¥7万</span><span>¥10万</span>
+        </div>
+      </div>
+
+      <!-- F. 穴場エリア -->
+      <div style="background:#161b22;border:1px solid #d29922;border-radius:14px;padding:14px 20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:800;color:#d29922">🎯 今が穴場エリア TOP3</div>
+          <div style="font-size:10px;color:#8b949e;background:#21262d;border-radius:20px;padding:2px 10px">単価安 × 空き率高 = 需要>競合</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          ${bargainList.map(({ward,d},i) => `
+            <div onclick="selectWardDetail('${ward}')" style="flex:1;background:#21262d;border-radius:10px;padding:12px;cursor:pointer;border:1px solid #d2992230;transition:all .15s" onmouseover="this.style.borderColor='#d29922'" onmouseout="this.style.borderColor='#d2992230'">
+              <div style="font-size:10px;font-weight:700;color:#d29922;margin-bottom:4px">${i===0?'🥇 1位':i===1?'🥈 2位':'🥉 3位'}</div>
+              <div style="font-size:14px;font-weight:900;color:#e6edf3">${ward}</div>
+              <div style="font-size:16px;font-weight:900;color:#d29922;margin-top:4px">¥${(d.avg/10000).toFixed(1)}万</div>
+              <div style="font-size:10px;color:#8b949e;margin-top:2px">空き率 ${d.availRate}%</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- ソートボタン -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="font-size:11px;color:#8b949e;align-self:center">並び替え：</span>
+        ${[['avg','月額順'],['avail','空き率順'],['total','物件数順']].map(([k,l])=>`
+          <button onclick="heatmapSort='${k}';renderHeatmap()" style="padding:5px 14px;border-radius:20px;border:1px solid ${heatmapSort===k?'#58a6ff':'#30363d'};background:${heatmapSort===k?'#58a6ff22':'transparent'};color:${heatmapSort===k?'#58a6ff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">${l}</button>`).join('')}
+      </div>
+
+      <!-- ヒートマップグリッド -->
+      <div id="heatmap_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:20px">
+        ${sorted.map(([ward,d],i)=>{
+          const c = wardColor(d.avg);
+          const sig = demandSignal(d);
+          const trend = trendData[ward];
+          const trendCol = trend>=0?'rgba(248,81,73,.9)':'rgba(63,185,80,.9)';
+          const trendStr = trend>=0?`▲${trend.toFixed(1)}%`:`▼${Math.abs(trend).toFixed(1)}%`;
+          const isBargain = bargainWards.has(ward);
+          return `
+          <div id="ward_block_${ward.replace(/[^\w]/g,'_')}" onclick="selectWardDetail('${ward}')"
+            style="background:${c.bg};border-radius:12px;padding:12px 10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;aspect-ratio:1;border:1px solid rgba(255,255,255,.05)"
+            onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.4)';this.style.zIndex='1'"
+            onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none';this.style.zIndex='0'">
+            ${isBargain?`<div style="position:absolute;top:5px;left:5px;background:#d29922;border-radius:4px;padding:1px 5px;font-size:8px;font-weight:700;color:#fff">穴場</div>`:''}
+            <div style="position:absolute;top:5px;right:5px;font-size:8px;font-weight:700;color:rgba(255,255,255,.4)">#${i+1}</div>
+            <div style="font-size:12px;font-weight:900;color:#fff;margin-top:${isBargain?8:0}px;line-height:1.2">${ward.replace('区','')}<span style="font-size:8px;opacity:.6">区</span></div>
+            <div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-top:4px">¥${(d.avg/1000).toFixed(1)}<span style="font-size:9px;opacity:.7">万</span></div>
+            <div style="font-size:9px;color:${trendCol};margin-top:2px;font-weight:700">${trendStr}</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">${sig.icon} ${sig.label}</div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.15)">
+              <div style="height:100%;background:rgba(255,255,255,.5);width:${Math.round(d.total/maxTotal*100)}%"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- 詳細パネル -->
+      <div id="ward_detail_panel"></div>
+
+      <!-- 凡例 -->
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:#8b949e">相場：</span>
+        ${[['¥42,000〜','#c0392b'],['¥38〜42k','#e74c3c'],['¥33〜38k','#e67e22'],['¥28〜33k','#f39c12'],['¥23〜28k','#27ae60'],['〜¥23,000','#16a085']].map(([l,c])=>`
+          <div style="display:flex;align-items:center;gap:4px">
+            <div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>
+            <span style="font-size:10px;color:#8b949e">${l}</span>
+          </div>`).join('')}
+      </div>
+
+      <!-- 一覧テーブル -->
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:14px;overflow:hidden">
+        <div style="padding:12px 18px;border-bottom:1px solid #30363d;font-size:12px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.5px">詳細データ一覧</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:#0d1117">
+                ${['区名','平均月額','前月比','最安値','空き率','物件数','シグナル'].map(h=>`<th style="padding:10px 14px;text-align:left;font-weight:700;color:#8b949e;white-space:nowrap;font-size:11px">${h}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${sorted.map(([ward,d])=>{
+                const c = wardColor(d.avg);
+                const sig = demandSignal(d);
+                const trend = trendData[ward];
+                const trendCol = trend>=0?'#f85149':'#3fb950';
+                const isBargain = bargainWards.has(ward);
+                return `<tr style="border-bottom:1px solid #21262d;cursor:pointer;transition:background .1s" onclick="selectWardDetail('${ward}')"
+                  onmouseover="this.style.background='#21262d'" onmouseout="this.style.background='transparent'">
+                  <td style="padding:10px 14px;font-weight:700;color:#e6edf3">
+                    ${ward}${isBargain?` <span style="background:#d29922;color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">穴場</span>`:''}
+                  </td>
+                  <td style="padding:10px 14px">
+                    <span style="background:${c.bg};color:#fff;padding:3px 10px;border-radius:20px;font-weight:700;font-size:11px">¥${d.avg.toLocaleString()}</span>
+                  </td>
+                  <td style="padding:10px 14px;font-weight:700;color:${trendCol}">${trend>=0?'▲':'▼'}${Math.abs(trend).toFixed(1)}%</td>
+                  <td style="padding:10px 14px;color:#8b949e">¥${d.min.toLocaleString()}</td>
+                  <td style="padding:10px 14px">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <div style="width:40px;height:4px;background:#30363d;border-radius:2px;overflow:hidden">
+                        <div style="height:100%;background:${d.availRate>=15?'#f85149':'#3fb950'};width:${Math.min(d.availRate*3,100)}%"></div>
+                      </div>
+                      <span style="color:${d.availRate>=15?'#f85149':'#3fb950'};font-weight:700">${d.availRate}%</span>
+                    </div>
+                  </td>
+                  <td style="padding:10px 14px;color:#8b949e">${d.total}件</td>
+                  <td style="padding:10px 14px">${sig.icon} <span style="color:${sig.color};font-size:11px;font-weight:600">${sig.label}</span></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- フッターCTA -->
+      <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:16px;padding:20px;text-align:center;margin-top:16px">
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">気になるエリアが見つかりましたか？</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:14px">ブロックをクリックするとそのエリアの物件を検索できます</div>
+        <button onclick="switchTab('search')" style="background:var(--gold);border:none;border-radius:10px;padding:11px 28px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">駐車場を探す →</button>
+      </div>
+
+    </div>
+  </div>`;
 }
 
 function selectWardDetail(ward) {
@@ -1920,27 +2166,19 @@ function selectWardDetail(ward) {
   const c = wardColor(d.avg);
   const sig = demandSignal(d);
   const panel = document.getElementById('ward_detail_panel');
+  if (!panel) return;
   panel.innerHTML = `
-    <div class="fadeUp" style="background:#fff;border-radius:16px;padding:20px;border:2px solid ${c.bg};margin-bottom:16px">
+    <div class="fadeUp" style="background:#161b22;border:1.5px solid ${c.bg};border-radius:16px;padding:20px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <div style="width:44px;height:44px;background:${c.bg};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0">${ward[0]}</div>
+        <div style="width:44px;height:44px;background:${c.bg};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0">${ward[0]}</div>
         <div>
-          <div style="font-size:18px;font-weight:900;color:var(--t)">${ward}</div>
-          <div style="font-size:12px;color:${sig.color};font-weight:600">${sig.icon} ${sig.label} · ${c.label}</div>
+          <div style="font-size:18px;font-weight:900;color:#e6edf3">${ward}</div>
+          <div style="font-size:12px;color:${sig.color};font-weight:600;margin-top:2px">${sig.icon} ${sig.label} · ${c.label}</div>
         </div>
-        <button onclick="document.getElementById('ward_detail_panel').innerHTML=''" style="margin-left:auto;background:transparent;border:none;color:var(--t3);font-size:18px;cursor:pointer">✕</button>
+        <button onclick="document.getElementById('ward_detail_panel').innerHTML=''" style="margin-left:auto;background:transparent;border:none;color:#8b949e;font-size:20px;cursor:pointer">✕</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">
-        ${[
-          ['平均月額', '¥'+d.avg.toLocaleString(), c.bg],
-          ['最安値', '¥'+d.min.toLocaleString(), '#1a5c3a'],
-          ['空きあり', d.avail+'件 ('+d.availRate+'%)', d.availRate>=15?'#e74c3c':'#1a5c3a'],
-          ['掲載物件数', d.total+'件', '#0d2b4e'],
-        ].map(([l,v,col])=>`
-          <div style="background:var(--bg);border-radius:10px;padding:12px 14px">
-            <div style="font-size:10px;color:var(--t3);margin-bottom:3px">${l}</div>
-            <div style="font-size:16px;font-weight:800;color:${col}">${v}</div>
-          </div>`).join('')}
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
+        ${[['平均月額','¥'+d.avg.toLocaleString(),c.bg],['最安値','¥'+d.min.toLocaleString(),'#3fb950'],['空きあり',d.avail+'件 ('+d.availRate+'%)',d.availRate>=15?'#f85149':'#3fb950'],['掲載物件数',d.total+'件','#58a6ff']].map(([l,v,col])=>`<div style="background:#21262d;border-radius:10px;padding:12px 14px"><div style="font-size:10px;color:#8b949e;margin-bottom:4px">${l}</div><div style="font-size:16px;font-weight:800;color:${col}">${v}</div></div>`).join('')}
       </div>
       <button onclick="state.query='${ward}';switchTab('search');renderList();updateAdvice()"
         style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--a);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
@@ -1950,6 +2188,212 @@ function selectWardDetail(ward) {
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
+function renderHeatmapInvest(el) {
+  const wards = Object.entries(WARD_STATS);
+
+  // 投資スコア計算（空き率×単価×件数で総合評価）
+  const investScored = wards.map(([ward, d]) => {
+    const demandScore = d.availRate * 2;          // 空き率高い = 需要旺盛
+    const priceScore = (d.avg / 1000);             // 単価高い = 収益大
+    const stabilityScore = Math.min(d.total / 10, 20); // 件数多い = 市場安定
+    const score = Math.round(demandScore + priceScore + stabilityScore);
+    return { ward, d, score };
+  }).sort((a, b) => b.score - a.score);
+
+  const topWards = investScored.slice(0, 5);
+  const totalProps = wards.reduce((s,[,d])=>s+d.total,0);
+
+  const existingContent = el.innerHTML;
+  el.innerHTML = existingContent + `
+    <!-- モード切り替え -->
+    <div style="display:flex;gap:0;background:var(--bg);border-radius:14px;padding:4px;margin-bottom:20px;border:1px solid var(--b)">
+      <button onclick="heatmapMode='search';renderHeatmap()" style="flex:1;padding:10px;border-radius:10px;border:none;background:transparent;color:var(--t2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🔍 相場チェック</button>
+      <button onclick="heatmapMode='invest';renderHeatmap()" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--gold);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📈 投資視点</button>
+    </div>
+    <!-- 投資視点ヘッダー -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:20px;padding:24px;margin-bottom:20px;border:1px solid #2a2a4a;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="font-size:22px;font-weight:900;color:#fff">駐車場投資分析</div>
+        <div style="background:var(--gold);border-radius:20px;padding:3px 12px;font-size:10px;font-weight:700;color:#fff">INVESTOR VIEW</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:16px">ParkLink独自データ ${totalProps.toLocaleString()}件をもとに、投資適性を分析しました</div>
+      <!-- ティッカー -->
+      <div style="overflow:hidden;white-space:nowrap;border-top:1px solid rgba(255,255,255,.1);padding-top:12px">
+        <div style="display:inline-block;animation:ticker 20s linear infinite">
+          ${investScored.map(({ward,d})=>{
+            const col = d.availRate>=20?'#f1948a':d.availRate>=12?'#f0b27a':'#7dcea0';
+            return `<span style="margin-right:28px;font-size:11px;font-weight:700">
+              <span style="color:rgba(255,255,255,.5)">${ward}</span>
+              <span style="color:${col}">¥${(d.avg/10000).toFixed(1)}万</span>
+              <span style="color:${col};font-size:9px">${d.availRate>=20?'▲':d.availRate>=12?'▶':'▼'}${d.availRate}%</span>
+            </span>`;
+          }).join('')}
+          ${investScored.map(({ward,d})=>{
+            const col = d.availRate>=20?'#f1948a':d.availRate>=12?'#f0b27a':'#7dcea0';
+            return `<span style="margin-right:28px;font-size:11px;font-weight:700">
+              <span style="color:rgba(255,255,255,.5)">${ward}</span>
+              <span style="color:${col}">¥${(d.avg/10000).toFixed(1)}万</span>
+              <span style="color:${col};font-size:9px">${d.availRate>=20?'▲':d.availRate>=12?'▶':'▼'}${d.availRate}%</span>
+            </span>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- B. 空き率=投資チャンスマップ -->
+    <div style="background:#fff;border-radius:20px;padding:20px;border:1px solid var(--b);margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="font-size:16px;font-weight:800;color:var(--t)">空き率 = 投資チャンスマップ</div>
+        <div style="font-size:11px;color:var(--t3)">空き率が高い = 入居者がすぐ見つかる</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px">
+        ${investScored.map(({ward, d, score}) => {
+          const availColor = d.availRate >= 20 ? '#c0392b' : d.availRate >= 12 ? '#e67e22' : d.availRate >= 7 ? '#27ae60' : '#8e44ad';
+          const signal = d.availRate >= 20 ? '🔥 需要旺盛' : d.availRate >= 12 ? '📈 安定需要' : d.availRate >= 7 ? '✅ 堅調' : '⚠️ 競合多め';
+          return `
+          <div onclick="showInvestDetail('${ward}')" style="background:${availColor}18;border:1.5px solid ${availColor}40;border-radius:14px;padding:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="font-size:12px;font-weight:800;color:var(--t);margin-bottom:4px">${ward}</div>
+            <div style="font-size:18px;font-weight:900;color:${availColor}">${d.availRate}%</div>
+            <div style="font-size:9px;color:${availColor};margin-top:2px">${signal}</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:4px">平均¥${(d.avg/10000).toFixed(1)}万</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- E. 投資総合ランキング -->
+    <div style="background:#fff;border-radius:20px;padding:20px;border:1px solid var(--b);margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800;color:var(--t);margin-bottom:6px">投資総合ランキング TOP5</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:14px">空き率・単価・市場規模を総合スコア化 · クリックでシミュレーターに反映</div>
+      ${topWards.map(({ward, d, score}, i) => {
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}位`;
+        const yearIncome = d.avg * 12;
+        const availColor = d.availRate >= 20 ? '#c0392b' : d.availRate >= 12 ? '#e67e22' : '#27ae60';
+        return `
+        <div onclick="showInvestDetail('${ward}')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--b);margin-bottom:8px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+          <div style="font-size:22px;flex-shrink:0;width:36px;text-align:center">${medal}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:800;color:var(--t)">${ward}</div>
+            <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+              <span style="font-size:10px;background:${availColor}15;color:${availColor};padding:2px 8px;border-radius:10px;font-weight:700">空き${d.availRate}%</span>
+              <span style="font-size:10px;background:var(--al);color:var(--a);padding:2px 8px;border-radius:10px;font-weight:700">平均¥${d.avg.toLocaleString()}/月</span>
+              <span style="font-size:10px;background:#fff8e8;color:#7a5900;padding:2px 8px;border-radius:10px;font-weight:700">${d.total}件</span>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:10px;color:var(--t3)">年間収入目安</div>
+            <div style="font-size:14px;font-weight:900;color:var(--a)">¥${yearIncome.toLocaleString()}</div>
+            <div style="font-size:9px;color:var(--t3)">1台あたり</div>
+          </div>
+          <div style="width:48px;height:48px;border-radius:50%;background:${score>=60?'#c0392b':score>=45?'#e67e22':'#27ae60'};display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="font-size:14px;font-weight:900;color:#fff">${score}</div>
+            <div style="font-size:8px;color:rgba(255,255,255,.7)">SCORE</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- C. 収益シミュレーター -->
+    <div style="background:#fff;border-radius:20px;padding:20px;border:1px solid var(--b);margin-bottom:16px" id="invest_sim">
+      <div style="font-size:16px;font-weight:800;color:var(--t);margin-bottom:4px">収益シミュレーター</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:16px">エリアと台数を入力して収益を試算 · ランキングから自動入力できます</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:6px">エリア</label>
+          <select id="sim_ward" onchange="calcSimulation()" style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;background:#fff">
+            ${Object.keys(WARD_STATS).map(w=>`<option value="${w}">${w}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:6px">台数</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="simCount=Math.max(1,simCount-1);document.getElementById('sim_count_disp').textContent=simCount;calcSimulation()" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--b);background:#fff;font-size:16px;cursor:pointer">−</button>
+            <span id="sim_count_disp" style="font-size:20px;font-weight:900;color:var(--a);min-width:32px;text-align:center">3</span>
+            <button onclick="simCount=Math.min(50,simCount+1);document.getElementById('sim_count_disp').textContent=simCount;calcSimulation()" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--b);background:#fff;font-size:16px;cursor:pointer">＋</button>
+            <span style="font-size:13px;color:var(--t2)">台</span>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:6px">管理コスト（月額の何%）</label>
+          <select id="sim_cost" onchange="calcSimulation()" style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;background:#fff">
+            <option value="0">自主管理（0%）</option>
+            <option value="10" selected>委託管理（10%）</option>
+            <option value="15">フルサービス（15%）</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:6px">土地価格（万円）任意</label>
+          <input id="sim_land" type="number" placeholder="例：5000" oninput="calcSimulation()" style="width:100%;border:1.5px solid var(--b);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit">
+        </div>
+      </div>
+      <!-- 試算結果 -->
+      <div id="sim_result" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;padding:20px">
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">試算結果</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="sim_numbers">
+          <div style="text-align:center;background:rgba(255,255,255,.05);border-radius:10px;padding:12px">
+            <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px">月間収入</div>
+            <div style="font-size:22px;font-weight:900;color:#fff" id="sim_monthly">—</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,.05);border-radius:10px;padding:12px">
+            <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px">年間手取り</div>
+            <div style="font-size:22px;font-weight:900;color:var(--gold)" id="sim_yearly">—</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,.05);border-radius:10px;padding:12px">
+            <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px">5年累計</div>
+            <div style="font-size:22px;font-weight:900;color:#7ee8a2" id="sim_5year">—</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,.05);border-radius:10px;padding:12px">
+            <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px">表面利回り</div>
+            <div style="font-size:22px;font-weight:900;color:#58a6ff" id="sim_yield">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="background:linear-gradient(135deg,var(--a),var(--a2));border-radius:20px;padding:24px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px">あなたの駐車場を今すぐ収益化</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:20px">ParkLinkに掲載すれば最短1営業日で入居者募集スタート</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button onclick="switchTab('search')" style="padding:13px 24px;border-radius:12px;border:none;background:var(--gold);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">無料で掲載する →</button>
+        <button onclick="switchTab('search')" style="padding:13px 24px;border-radius:12px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">相場をさらに調べる</button>
+      </div>
+    </div>`;
+
+  // 初期計算
+  setTimeout(calcSimulation, 100);
+}
+
+let simCount = 3;
+function calcSimulation() {
+  const ward = document.getElementById('sim_ward')?.value;
+  const costRate = parseInt(document.getElementById('sim_cost')?.value || 10) / 100;
+  const landPrice = parseInt(document.getElementById('sim_land')?.value || 0) * 10000;
+  if (!ward || !WARD_STATS[ward]) return;
+
+  const avg = WARD_STATS[ward].avg;
+  const grossMonthly = avg * simCount;
+  const netMonthly = Math.round(grossMonthly * (1 - costRate));
+  const netYearly = netMonthly * 12;
+  const net5year = netYearly * 5;
+  const yield_ = landPrice > 0 ? ((netYearly / landPrice) * 100).toFixed(2) + '%' : '—';
+
+  document.getElementById('sim_monthly').textContent = '¥' + grossMonthly.toLocaleString();
+  document.getElementById('sim_yearly').textContent = '¥' + netYearly.toLocaleString();
+  document.getElementById('sim_5year').textContent = '¥' + net5year.toLocaleString();
+  document.getElementById('sim_yield').textContent = yield_;
+}
+
+function showInvestDetail(ward) {
+  const d = WARD_STATS[ward];
+  if (!d) return;
+  // シミュレーターのエリアを選択したエリアに変更
+  const sel = document.getElementById('sim_ward');
+  if (sel) { sel.value = ward; calcSimulation(); }
+  // シミュレーターにスクロール
+  document.getElementById('invest_sim')?.scrollIntoView({ behavior: 'smooth' });
+  showToast(`📊 ${ward}のデータをシミュレーターに反映しました`);
+}
 
 const ARTICLES = [
   {
@@ -1957,77 +2401,77 @@ const ARTICLES = [
     title: '月極駐車場と時間貸し駐車場の違いとは？自分に合った選び方ガイド',
     summary: '月極駐車場と時間貸し（コインパーキング）はどう違うのか。コスト・利便性・契約の観点から徹底比較します。',
     date: '2026-05-01', readTime: '3分',
-    content: `<h2>月極駐車場とは？</h2><p>月極駐車場とは、月単位で契約して毎月定額の駐車料金を支払う駐車場です。長期利用を前提とした契約形態で、自宅や職場の近くに車を置きたい方に最適です。</p><h2>時間貸し駐車場との違い</h2><p>時間貸し（コインパーキング）は使った時間分だけ料金が発生します。毎日通勤などで使う場合は月極の方が圧倒的にコスパが高くなります。</p><p>例えばコインパーキングで1日500円かかる場合、月22日利用すると月11,000円。同エリアの月極が15,000円でも週末も停めるなら月極の方が安くなることがほとんどです。</p><h2>月極駐車場を選ぶべき人</h2><p>毎日または週4日以上車を使う方、決まった場所に確実に停めたい方、コインパーキングの空き待ちが煩わしい方には月極がおすすめです。</p>`
+    content: '<h2>月極駐車場とは？</h2><p>月極駐車場とは、月単位で契約して毎月定額の駐車料金を支払う駐車場です。長期利用を前提とした契約形態で、自宅や職場の近くに車を置きたい方に最適です。</p><h2>時間貸し駐車場との違い</h2><p>時間貸し（コインパーキング）は使った時間分だけ料金が発生します。毎日通勤などで使う場合は月極の方が圧倒的にコスパが高くなります。</p><p>例えばコインパーキングで1日500円かかる場合、月22日利用すると月11,000円。同エリアの月極が15,000円でも週末も停めるなら月極の方が安くなることがほとんどです。</p><h2>月極駐車場を選ぶべき人</h2><p>毎日または週4日以上車を使う方、決まった場所に確実に停めたい方、コインパーキングの空き待ちが煩わしい方には月極がおすすめです。</p>'
   },
   {
     id: 2, category: '契約', tag: '#契約のポイント',
     title: '月極駐車場の契約前に確認すべき7つのチェックリスト',
     summary: '契約後のトラブルを避けるために、契約前に必ず確認しておきたいポイントを7つにまとめました。',
     date: '2026-05-03', readTime: '4分',
-    content: `<h2>契約前の7つのチェックリスト</h2><h3>① 車のサイズが入るか</h3><p>全長・全幅・全高・車重を事前に確認。特に機械式駐車場は制限が厳しいため、車のスペックと照合してください。</p><h3>② 月額以外の費用</h3><p>敷金・管理費・事務手数料が発生する場合があります。初期費用の総額を必ず確認しましょう。</p><h3>③ 解約通知の期間</h3><p>多くの契約で「解約1ヶ月前通知」が必要です。引越しや転勤の際にトラブルになりやすいポイントです。</p><h3>④ 24時間入出庫できるか</h3><p>管理会社によっては夜間の入出庫に制限がある場合があります。</p><h3>⑤ 屋根・防犯設備の有無</h3><p>屋根付きは雨・鳥害・日焼けから車を守ります。防犯カメラや照明の有無も重要です。</p><h3>⑥ 契約書の内容</h3><p>禁止事項（洗車・車中泊等）を必ず確認してください。</p><h3>⑦ 緊急連絡先</h3><p>機械式の故障や近隣トラブルの際の連絡先が明確かどうか確認しておきましょう。</p>`
+    content: '<h2>契約前の7つのチェックリスト</h2><h3>① 車のサイズが入るか</h3><p>全長・全幅・全高・車重を事前に確認。特に機械式駐車場は制限が厳しいため、車のスペックと照合してください。</p><h3>② 月額以外の費用</h3><p>敷金・管理費・事務手数料が発生する場合があります。初期費用の総額を必ず確認しましょう。</p><h3>③ 解約通知の期間</h3><p>多くの契約で「解約1ヶ月前通知」が必要です。引越しや転勤の際にトラブルになりやすいポイントです。</p><h3>④ 24時間入出庫できるか</h3><p>管理会社によっては夜間の入出庫に制限がある場合があります。</p><h3>⑤ 屋根・防犯設備の有無</h3><p>屋根付きは雨・鳥害・日焼けから車を守ります。防犯カメラや照明の有無も重要です。</p><h3>⑥ 契約書の内容</h3><p>禁止事項（洗車・車中泊等）を必ず確認してください。</p><h3>⑦ 緊急連絡先</h3><p>機械式の故障や近隣トラブルの際の連絡先が明確かどうか確認しておきましょう。</p>'
   },
   {
     id: 3, category: '節約', tag: '#コスト削減',
     title: '駐車場代を年間10万円節約する方法｜エリア選びで差がつくコスト術',
     summary: '駐車場を少し工夫するだけで年間数万円の節約が可能です。エリア選び・交渉術・タイミングを解説します。',
     date: '2026-05-05', readTime: '5分',
-    content: `<h2>駐車場代は「場所」で大きく変わる</h2><p>同じ駅でも徒歩5分→10分になるだけで月額が5,000〜15,000円変わることがあります。新宿駅徒歩3分で月50,000円の物件が、徒歩10分では月25,000円になるケースも。年間300,000円の差です。</p><h2>駅の「裏側」を探す</h2><p>人気エリアは駅の主要出口側に集中しています。北口・裏口側は相場が10〜20%安い傾向があります。</p><h2>隣駅を狙う</h2><p>都心の駅から1駅隣に変えるだけで相場が大きく変わります。勤務地まで電車1本なら隣駅も選択肢に。</p><h2>交渉のポイント</h2><p>長期契約（2年以上）や一括払いの意向を伝えると、月額を値下げしてもらえる場合があります。</p>`
+    content: '<h2>駐車場代は「場所」で大きく変わる</h2><p>同じ駅でも徒歩5分→10分になるだけで月額が5,000〜15,000円変わることがあります。新宿駅徒歩3分で月50,000円の物件が、徒歩10分では月25,000円になるケースも。年間300,000円の差です。</p><h2>駅の「裏側」を探す</h2><p>人気エリアは駅の主要出口側に集中しています。北口・裏口側は相場が10〜20%安い傾向があります。</p><h2>隣駅を狙う</h2><p>都心の駅から1駅隣に変えるだけで相場が大きく変わります。勤務地まで電車1本なら隣駅も選択肢に。</p><h2>交渉のポイント</h2><p>長期契約（2年以上）や一括払いの意向を伝えると、月額を値下げしてもらえる場合があります。</p>'
   },
   {
     id: 4, category: '知識', tag: '#機械式駐車場',
     title: '機械式駐車場の種類と注意点｜入庫できない車を事前に防ぐ方法',
     summary: '機械式駐車場には複数の種類があり、車のサイズによっては入庫できない場合があります。事前確認のポイントを解説。',
     date: '2026-05-07', readTime: '4分',
-    content: `<h2>機械式駐車場の主な種類</h2><p>「二段式」「多段式」「パズル式」「エレベーター式」の4種類があります。それぞれ収容台数・サイズ制限・操作方法が異なります。</p><h2>サイズ制限の確認方法</h2><p>必ず「全長・全幅・全高・重量」の4つを確認します。全長5,000mm以下・全幅1,850mm以下・全高1,550mm以下・重量2,000kg以下が一般的な制限です。</p><h2>入庫できない車の例</h2><p>アルファード・ヴェルファイア（全高1,950mm〜）、ハイエース（全高2,100mm〜）は多くの機械式に入庫できません。契約前に必ず管理会社に車のスペックを伝えて確認しましょう。</p>`
+    content: '<h2>機械式駐車場の主な種類</h2><p>「二段式」「多段式」「パズル式」「エレベーター式」の4種類があります。それぞれ収容台数・サイズ制限・操作方法が異なります。</p><h2>サイズ制限の確認方法</h2><p>必ず「全長・全幅・全高・重量」の4つを確認します。全長5,000mm以下・全幅1,850mm以下・全高1,550mm以下・重量2,000kg以下が一般的な制限です。</p><h2>入庫できない車の例</h2><p>アルファード・ヴェルファイア（全高1,950mm〜）、ハイエース（全高2,100mm〜）は多くの機械式に入庫できません。契約前に必ず管理会社に車のスペックを伝えて確認しましょう。</p>'
   },
   {
     id: 5, category: 'オーナー向け', tag: '#駐車場経営',
     title: '空き駐車場を月極に転換すると年間いくら稼げる？収益シミュレーション',
     summary: '使っていない土地や駐車スペースを月極駐車場として貸し出した場合の収益をシミュレーションします。',
     date: '2026-05-09', readTime: '5分',
-    content: `<h2>月極駐車場の収益ポテンシャル</h2><p>東京都内では月極駐車場の平均月額が約30,000〜50,000円。1台分のスペースでも年間36〜60万円の収入が期待できます。</p><h2>エリア別の相場目安</h2><p>都心（千代田区・港区）：月40,000〜80,000円、城南・城西（世田谷区・杉並区）：月20,000〜40,000円、郊外（多摩・八王子）：月10,000〜20,000円。</p><h2>収益シミュレーション</h2><p>新宿区のスペース3台分を月35,000円で貸し出した場合、月収105,000円、年収1,260,000円。固定資産税や管理費を引いても年間100万円超の収益が見込めます。</p><h2>ParkLinkで掲載するメリット</h2><p>エリアで駐車場を探しているユーザーに直接アプローチできます。オーナー診断機能で周辺相場もすぐに確認できます。</p>`
+    content: '<h2>月極駐車場の収益ポテンシャル</h2><p>東京都内では月極駐車場の平均月額が約30,000〜50,000円。1台分のスペースでも年間36〜60万円の収入が期待できます。</p><h2>エリア別の相場目安</h2><p>都心（千代田区・港区）：月40,000〜80,000円、城南・城西（世田谷区・杉並区）：月20,000〜40,000円、郊外（多摩・八王子）：月10,000〜20,000円。</p><h2>収益シミュレーション</h2><p>新宿区のスペース3台分を月35,000円で貸し出した場合、月収105,000円、年収1,260,000円。固定資産税や管理費を引いても年間100万円超の収益が見込めます。</p><h2>ParkLinkで掲載するメリット</h2><p>エリアで駐車場を探しているユーザーに直接アプローチできます。オーナー診断機能で周辺相場もすぐに確認できます。</p>'
   },
   {
     id: 6, category: '基礎知識', tag: '#よくある質問',
     title: '月極駐車場のよくある質問10選｜初めての契約で迷わないために',
     summary: '月極駐車場の契約で初めての方が迷いがちな疑問を10個ピックアップして分かりやすく解説します。',
     date: '2026-05-10', readTime: '6分',
-    content: `<h2>Q1. 敷金はいくらが相場？</h2><p>月額の1〜3ヶ月分が一般的です。退去時に原状回復費用を差し引いて返還されます。</p><h2>Q2. 審査はあるの？</h2><p>身分証明書・車検証の提出が必要です。審査自体は数日〜1週間程度です。</p><h2>Q3. 解約はいつでもできる？</h2><p>多くの場合、1〜2ヶ月前の書面通知が必要です。</p><h2>Q4. 車を替えたら申告が必要？</h2><p>はい。車検証の内容変更があった場合は管理会社への届け出が必要です。</p><h2>Q5. 他人に貸してもいい？</h2><p>原則禁止です。転貸（又貸し）は契約違反となり、即時解約になる場合があります。</p><h2>Q6. 洗車はできる？</h2><p>水を使った洗車を禁止している駐車場も多いため、事前確認が必要です。</p>`
+    content: '<h2>Q1. 敷金はいくらが相場？</h2><p>月額の1〜3ヶ月分が一般的です。退去時に原状回復費用を差し引いて返還されます。</p><h2>Q2. 審査はあるの？</h2><p>身分証明書・車検証の提出が必要です。審査自体は数日〜1週間程度です。</p><h2>Q3. 解約はいつでもできる？</h2><p>多くの場合、1〜2ヶ月前の書面通知が必要です。</p><h2>Q4. 車を替えたら申告が必要？</h2><p>はい。車検証の内容変更があった場合は管理会社への届け出が必要です。</p><h2>Q5. 他人に貸してもいい？</h2><p>原則禁止です。転貸（又貸し）は契約違反となり、即時解約になる場合があります。</p><h2>Q6. 洗車はできる？</h2><p>水を使った洗車を禁止している駐車場も多いため、事前確認が必要です。</p>'
   },
   {
     id: 7, category: '法人向け', tag: '#コスト削減',
     title: '社用車の駐車場コストを30%削減した3つの方法',
     summary: '複数台の社用車を管理する企業が実践している、駐車場コスト削減の具体的な手法を3つ紹介します。',
     date: '2026-05-11', readTime: '5分',
-    content: `<h2>法人の駐車場コストは「見直し余地」が大きい</h2><p>社用車を複数台保有する企業の多くは、駐車場契約を「一度決めたらそのまま」にしがちです。担当者が変わるたびに引き継ぎが曖昧になり、相場より高い契約が何年も続くケースが少なくありません。実際に弊社の調査では、法人の駐車場契約の約40%が周辺相場より10%以上高い月額を支払っていました。</p><h2>方法① エリアの分散化</h2><p>本社や営業所の目の前に全台停める必要はありません。徒歩5〜10分圏内に分散させるだけで、月額を20〜40%削減できるケースがあります。特に都心では、1ブロック離れるだけで月額が1万円以上変わることも珍しくありません。</p><h2>方法② 契約の一元管理と棚卸し</h2><p>まず全社の駐車場契約を一覧化します。拠点別・担当者別・月額・契約終了日を整理すると、「誰も使っていないのに契約が続いている」空き契約が見つかることがあります。こうした幽霊契約の解約だけで年間数十万円の削減になった企業もあります。</p><h2>方法③ 一括契約交渉</h2><p>複数台をまとめて同じ管理会社と契約することで、台数割引や管理費免除を引き出せることがあります。「5台以上で月額5%引き」という条件を提示している管理会社も増えています。ParkLinkのオーナー診断機能で周辺相場を把握してから交渉に臨むと成功率が上がります。</p>`
+    content: '<h2>法人の駐車場コストは「見直し余地」が大きい</h2><p>社用車を複数台保有する企業の多くは、駐車場契約を「一度決めたらそのまま」にしがちです。担当者が変わるたびに引き継ぎが曖昧になり、相場より高い契約が何年も続くケースが少なくありません。実際に弊社の調査では、法人の駐車場契約の約40%が周辺相場より10%以上高い月額を支払っていました。</p><h2>方法① エリアの分散化</h2><p>本社や営業所の目の前に全台停める必要はありません。徒歩5〜10分圏内に分散させるだけで、月額を20〜40%削減できるケースがあります。特に都心では、1ブロック離れるだけで月額が1万円以上変わることも珍しくありません。</p><h2>方法② 契約の一元管理と棚卸し</h2><p>まず全社の駐車場契約を一覧化します。拠点別・担当者別・月額・契約終了日を整理すると、「誰も使っていないのに契約が続いている」空き契約が見つかることがあります。こうした幽霊契約の解約だけで年間数十万円の削減になった企業もあります。</p><h2>方法③ 一括契約交渉</h2><p>複数台をまとめて同じ管理会社と契約することで、台数割引や管理費免除を引き出せることがあります。「5台以上で月額5%引き」という条件を提示している管理会社も増えています。ParkLinkのオーナー診断機能で周辺相場を把握してから交渉に臨むと成功率が上がります。</p>'
   },
   {
     id: 8, category: 'トラブル対応', tag: '#トラブル',
     title: '月極駐車場でよくあるトラブルと解決法10選',
     summary: '契約後に発生しやすいトラブルを10パターン紹介し、それぞれの対処法と予防策を解説します。',
     date: '2026-05-11', readTime: '6分',
-    content: `<h2>トラブル① 隣の車にキズをつけられた</h2><p>防犯カメラの映像確認を管理会社に依頼し、相手を特定できた場合は保険会社を通じて請求します。特定できない場合は自分の車両保険で対応することになります。契約時に防犯カメラの有無を確認しておくことが予防策です。</p><h2>トラブル② 機械式が故障して出庫できない</h2><p>管理会社の緊急連絡先に即時連絡します。深夜・休日でも対応義務がある場合がほとんどです。復旧までの代替駐車場費用は管理会社負担になるケースもあります。</p><h2>トラブル③ 解約を申し出たが敷金が返ってこない</h2><p>原状回復の範囲と敷金精算の内訳を書面で請求します。通常の使用による劣化は借主負担ではありません。内容に納得できない場合は国土交通省のガイドラインを根拠に交渉できます。</p><h2>トラブル④ 月額が突然値上げされた</h2><p>契約書に値上げ条件が明記されているか確認します。値上げ通知は通常1〜3ヶ月前が必要です。同意しない場合は解約の権利があります。</p><h2>トラブル⑤ 契約した駐車スペースに他の車が停まっている</h2><p>勝手に移動させず、管理会社に連絡して対応を依頼します。繰り返す場合は警察への相談も有効です。</p><h2>トラブル⑥ 大雨で駐車場が浸水した</h2><p>被害状況を写真で記録し、管理会社に報告します。天災による損害は通常管理会社の責任外ですが、排水設備の不備が原因であれば賠償請求できる場合があります。</p><h2>トラブル⑦〜⑩</h2><p>近隣住民からの苦情（深夜のエンジン音等）、駐車場の照明が壊れて暗い、契約時と異なるサイズ制限が適用された、解約後も請求が続く、といったトラブルはいずれも「書面での記録」と「管理会社への速やかな連絡」が解決の基本です。</p>`
+    content: '<h2>トラブル① 隣の車にキズをつけられた</h2><p>防犯カメラの映像確認を管理会社に依頼し、相手を特定できた場合は保険会社を通じて請求します。特定できない場合は自分の車両保険で対応することになります。契約時に防犯カメラの有無を確認しておくことが予防策です。</p><h2>トラブル② 機械式が故障して出庫できない</h2><p>管理会社の緊急連絡先に即時連絡します。深夜・休日でも対応義務がある場合がほとんどです。復旧までの代替駐車場費用は管理会社負担になるケースもあります。</p><h2>トラブル③ 解約を申し出たが敷金が返ってこない</h2><p>原状回復の範囲と敷金精算の内訳を書面で請求します。通常の使用による劣化は借主負担ではありません。内容に納得できない場合は国土交通省のガイドラインを根拠に交渉できます。</p><h2>トラブル④ 月額が突然値上げされた</h2><p>契約書に値上げ条件が明記されているか確認します。値上げ通知は通常1〜3ヶ月前が必要です。同意しない場合は解約の権利があります。</p><h2>トラブル⑤ 契約した駐車スペースに他の車が停まっている</h2><p>勝手に移動させず、管理会社に連絡して対応を依頼します。繰り返す場合は警察への相談も有効です。</p><h2>トラブル⑥ 大雨で駐車場が浸水した</h2><p>被害状況を写真で記録し、管理会社に報告します。天災による損害は通常管理会社の責任外ですが、排水設備の不備が原因であれば賠償請求できる場合があります。</p><h2>トラブル⑦〜⑩</h2><p>近隣住民からの苦情（深夜のエンジン音等）、駐車場の照明が壊れて暗い、契約時と異なるサイズ制限が適用された、解約後も請求が続く、といったトラブルはいずれも「書面での記録」と「管理会社への速やかな連絡」が解決の基本です。</p>'
   },
   {
     id: 9, category: '地域別', tag: '#相場',
     title: '東京23区・駐車場相場ランキング2026年版',
     summary: 'ParkLinkのデータをもとに、東京23区の月極駐車場平均月額をランキング形式で紹介します。',
     date: '2026-05-11', readTime: '4分',
-    content: `<h2>東京23区の相場を徹底比較</h2><p>ParkLinkに掲載されている5,700件以上のデータをもとに、区ごとの平均月額を集計しました。エリア選びの参考にしてください。</p><h2>高い区トップ5</h2><p>1位：港区（平均約55,000円）六本木・赤坂・麻布エリアを抱え、都内最高水準。外資系企業や富裕層向け物件が多く、機械式でも高額。</p><p>2位：千代田区（平均約48,000円）丸の内・大手町・神保町など都心中枢。オフィスビル付帯の駐車場が多く平均を押し上げています。</p><p>3位：渋谷区（平均約42,000円）表参道・恵比寿・代官山エリアが牽引。若者文化と高級住宅地が混在するため価格帯に幅があります。</p><p>4位：新宿区（平均約38,000円）新宿駅周辺は特に高く、西新宿のオフィスエリアも高水準。一方、早稲田・落合エリアは比較的安価です。</p><p>5位：中央区（平均約36,000円）銀座・築地・日本橋エリア。観光客も多く需要が安定しているため高値が続いています。</p><h2>安い区トップ5</h2><p>19位：足立区（平均約13,000円）、20位：葛飾区（平均約12,000円）、21位：江戸川区（平均約12,000円）、22位：練馬区（平均約11,000円）、23位：板橋区（平均約10,000円）。城東・城北エリアは都心より70〜80%安く、車通勤の多いエリアでも十分な供給があります。</p><h2>コスパの良いエリア</h2><p>都心へのアクセスが良く、かつ相場が低いのが墨田区・江東区・荒川区です。都心まで電車15〜20分圏内でありながら、月額15,000〜20,000円台の物件が多数存在します。</p>`
+    content: '<h2>東京23区の相場を徹底比較</h2><p>ParkLinkに掲載されている5,700件以上のデータをもとに、区ごとの平均月額を集計しました。エリア選びの参考にしてください。</p><h2>高い区トップ5</h2><p>1位：港区（平均約55,000円）六本木・赤坂・麻布エリアを抱え、都内最高水準。外資系企業や富裕層向け物件が多く、機械式でも高額。</p><p>2位：千代田区（平均約48,000円）丸の内・大手町・神保町など都心中枢。オフィスビル付帯の駐車場が多く平均を押し上げています。</p><p>3位：渋谷区（平均約42,000円）表参道・恵比寿・代官山エリアが牽引。若者文化と高級住宅地が混在するため価格帯に幅があります。</p><p>4位：新宿区（平均約38,000円）新宿駅周辺は特に高く、西新宿のオフィスエリアも高水準。一方、早稲田・落合エリアは比較的安価です。</p><p>5位：中央区（平均約36,000円）銀座・築地・日本橋エリア。観光客も多く需要が安定しているため高値が続いています。</p><h2>安い区トップ5</h2><p>19位：足立区（平均約13,000円）、20位：葛飾区（平均約12,000円）、21位：江戸川区（平均約12,000円）、22位：練馬区（平均約11,000円）、23位：板橋区（平均約10,000円）。城東・城北エリアは都心より70〜80%安く、車通勤の多いエリアでも十分な供給があります。</p><h2>コスパの良いエリア</h2><p>都心へのアクセスが良く、かつ相場が低いのが墨田区・江東区・荒川区です。都心まで電車15〜20分圏内でありながら、月額15,000〜20,000円台の物件が多数存在します。</p>'
   },
   {
     id: 10, category: '初心者向け', tag: '#審査',
     title: 'はじめての月極駐車場審査で落ちないための5つのコツ',
     summary: '月極駐車場にも審査があります。初めて申込む方が知っておくべき審査のポイントと通過率を上げる方法を解説します。',
     date: '2026-05-12', readTime: '4分',
-    content: `<h2>月極駐車場にも審査がある</h2><p>「賃貸アパートと違って駐車場は審査が緩い」と思っている方も多いですが、実際には身分確認・車検証確認・支払い能力の確認が行われます。特に機械式駐車場や高額物件では審査が厳しくなる傾向があります。</p><h2>コツ① 車検証を事前に準備する</h2><p>申込時に車検証の提出を求められます。特に重要なのは全長・全幅・全高・重量の数値です。機械式駐車場の場合、この数値が制限を超えていると即却下になります。事前にスマホで写真を撮っておくとスムーズです。</p><h2>コツ② 希望開始日に余裕を持つ</h2><p>「来週から使いたい」という急な申込は審査・手続きが間に合わないことがあります。少なくとも2週間前、できれば1ヶ月前から動くと選択肢が広がります。</p><h2>コツ③ 支払い方法を事前に確認する</h2><p>口座振替・クレジットカード払いに対応しているか確認しましょう。現金払いのみの物件では、初回に数ヶ月分の前払いを求められることもあります。</p><h2>コツ④ 勤務先・住所を正確に記載する</h2><p>申込書の記載内容と身分証明書の情報が一致していることが重要です。転居直後の場合は旧住所の免許証と現住所の証明書（住民票等）を両方用意すると安心です。</p><h2>コツ⑤ 複数件に同時申込しない</h2><p>人気物件は複数人が同時申込するため、第一希望が審査中に第二希望も申込んでおく「仮押さえ」は有効です。ただし2件同時に契約してしまわないよう、進捗管理を丁寧に行いましょう。</p>`
+    content: '<h2>月極駐車場にも審査がある</h2><p>「賃貸アパートと違って駐車場は審査が緩い」と思っている方も多いですが、実際には身分確認・車検証確認・支払い能力の確認が行われます。特に機械式駐車場や高額物件では審査が厳しくなる傾向があります。</p><h2>コツ① 車検証を事前に準備する</h2><p>申込時に車検証の提出を求められます。特に重要なのは全長・全幅・全高・重量の数値です。機械式駐車場の場合、この数値が制限を超えていると即却下になります。事前にスマホで写真を撮っておくとスムーズです。</p><h2>コツ② 希望開始日に余裕を持つ</h2><p>「来週から使いたい」という急な申込は審査・手続きが間に合わないことがあります。少なくとも2週間前、できれば1ヶ月前から動くと選択肢が広がります。</p><h2>コツ③ 支払い方法を事前に確認する</h2><p>口座振替・クレジットカード払いに対応しているか確認しましょう。現金払いのみの物件では、初回に数ヶ月分の前払いを求められることもあります。</p><h2>コツ④ 勤務先・住所を正確に記載する</h2><p>申込書の記載内容と身分証明書の情報が一致していることが重要です。転居直後の場合は旧住所の免許証と現住所の証明書（住民票等）を両方用意すると安心です。</p><h2>コツ⑤ 複数件に同時申込しない</h2><p>人気物件は複数人が同時申込するため、第一希望が審査中に第二希望も申込んでおく「仮押さえ」は有効です。ただし2件同時に契約してしまわないよう、進捗管理を丁寧に行いましょう。</p>'
   },
   {
     id: 11, category: 'オーナー向け', tag: '#税金',
     title: '駐車場オーナーが知っておくべき税金・確定申告の基礎知識',
     summary: '駐車場収入は不動産所得として確定申告が必要です。経費の範囲・青色申告のメリット・注意点をわかりやすく解説します。',
     date: '2026-05-12', readTime: '5分',
-    content: `<h2>駐車場収入は「不動産所得」</h2><p>月極駐車場の賃料収入は、税法上「不動産所得」に分類されます。給与所得と合算して確定申告が必要です。年間の不動産所得が20万円を超える場合は必ず申告が必要になります。</p><h2>経費として計上できるもの</h2><p>固定資産税・都市計画税、建物・設備の減価償却費、管理委託費（管理会社への手数料）、修繕費（舗装のひび割れ補修・ライン引き直し等）、ローン利息（土地取得のためのローン利息部分）、損害保険料、広告費（ポータルサイトへの掲載料等）が主な経費です。これらを適切に計上することで課税所得を大幅に圧縮できます。</p><h2>青色申告のメリット</h2><p>青色申告を選択すると、最大65万円の特別控除が受けられます。また赤字が出た場合に翌年以降3年間繰り越せる「損失の繰越控除」も利用できます。事前に税務署へ「青色申告承認申請書」を提出する必要があります。</p><h2>消費税の注意点</h2><p>駐車場収入は消費税の課税対象です（住宅の賃料は非課税ですが駐車場は課税）。年間売上が1,000万円を超えると消費税の課税事業者になります。インボイス制度への対応も必要になるため、売上規模が大きくなってきたら税理士への相談をおすすめします。</p><h2>ParkLinkのオーナー診断を活用</h2><p>ParkLinkのオーナー診断機能では、周辺相場との比較や収益シミュレーションを無料で確認できます。確定申告の前に収益の最適化を検討してみてください。</p>`
+    content: '<h2>駐車場収入は「不動産所得」</h2><p>月極駐車場の賃料収入は、税法上「不動産所得」に分類されます。給与所得と合算して確定申告が必要です。年間の不動産所得が20万円を超える場合は必ず申告が必要になります。</p><h2>経費として計上できるもの</h2><p>固定資産税・都市計画税、建物・設備の減価償却費、管理委託費（管理会社への手数料）、修繕費（舗装のひび割れ補修・ライン引き直し等）、ローン利息（土地取得のためのローン利息部分）、損害保険料、広告費（ポータルサイトへの掲載料等）が主な経費です。これらを適切に計上することで課税所得を大幅に圧縮できます。</p><h2>青色申告のメリット</h2><p>青色申告を選択すると、最大65万円の特別控除が受けられます。また赤字が出た場合に翌年以降3年間繰り越せる「損失の繰越控除」も利用できます。事前に税務署へ「青色申告承認申請書」を提出する必要があります。</p><h2>消費税の注意点</h2><p>駐車場収入は消費税の課税対象です（住宅の賃料は非課税ですが駐車場は課税）。年間売上が1,000万円を超えると消費税の課税事業者になります。インボイス制度への対応も必要になるため、売上規模が大きくなってきたら税理士への相談をおすすめします。</p><h2>ParkLinkのオーナー診断を活用</h2><p>ParkLinkのオーナー診断機能では、周辺相場との比較や収益シミュレーションを無料で確認できます。確定申告の前に収益の最適化を検討してみてください。</p>'
   },
 ];
 
@@ -2246,9 +2690,11 @@ function highlightText(text, query) {
 // TAB SWITCHING
 // ============================================================
 function switchTab(tab) {
+  // search タブは list_view を使う
+  const viewMap = { search: 'list_view', column: 'column_view', heatmap: 'heatmap_view', corp: 'corp_view' };
   ['list_view','column_view','heatmap_view','corp_view'].forEach(v => {
     const el = document.getElementById(v);
-    if (el) el.style.display = (v === tab+'_view') ? '' : 'none';
+    if (el) el.style.display = (viewMap[tab] === v) ? '' : 'none';
   });
   ['search','column','heatmap','corp'].forEach(t => {
     document.getElementById('tab_'+t)?.classList.toggle('active', t===tab);
@@ -2846,12 +3292,268 @@ function submitInquiry() { submitWithKyc(); }
 // ============================================================
 // AI CHAT
 // ============================================================
-const CHAT_SUGGS = ['新宿区で3万円以下','空きあり・平置き','千代田区・機械式以外','屋根付き・普通車','徒歩5分以内','港区で安い順'];
+// ============================================================
+// アイ - やさしいシナリオボット
+// ============================================================
+const AI_SCENARIOS = {
+  start: {
+    msg: 'こんにちは！アイです😊\n月極駐車場のことなら何でも聞いてください！\nまず、どんなことが知りたいですか？',
+    buttons: [
+      { label: '🔍 はじめて駐車場を探す', next: 'first_search' },
+      { label: '💰 相場を知りたい', next: 'price_check' },
+      { label: '📝 契約について知りたい', next: 'contract_info' },
+      { label: '🚗 今すぐ探したい', next: 'quick_search' },
+    ]
+  },
+  first_search: {
+    msg: '月極駐車場とは、毎月決まった金額を払って同じ場所を使える駐車場です🅿\n\nまず、どのあたりで探していますか？',
+    input: true,
+    inputPlaceholder: '例：新宿、渋谷駅の近く、自宅の近く…',
+    nextKey: 'first_search_area'
+  },
+  first_search_area: {
+    msg: (prev) => `「${prev}」エリアですね！\n予算はどのくらいをお考えですか？`,
+    buttons: [
+      { label: '2万円以下', next: 'first_search_car', value: 20000 },
+      { label: '3万円以下', next: 'first_search_car', value: 30000 },
+      { label: '4万円以下', next: 'first_search_car', value: 40000 },
+      { label: 'こだわらない', next: 'first_search_car', value: 0 },
+    ]
+  },
+  first_search_car: {
+    msg: 'お車のサイズを教えてください🚗',
+    buttons: [
+      { label: '軽自動車', next: 'do_search', value: '軽自動車' },
+      { label: '普通車・コンパクト', next: 'do_search', value: '普通車' },
+      { label: 'ワンボックス・SUV', next: 'do_search', value: 'ワンボックス' },
+      { label: 'わからない', next: 'do_search', value: '' },
+    ]
+  },
+  price_check: {
+    msg: 'どのエリアの相場を知りたいですか？',
+    buttons: [
+      { label: '都心（新宿・渋谷・港区）', next: 'price_result', value: 'city' },
+      { label: '城南（品川・目黒・世田谷）', next: 'price_result', value: 'south' },
+      { label: '城東（墨田・江東・足立）', next: 'price_result', value: 'east' },
+      { label: '城北（板橋・練馬・北区）', next: 'price_result', value: 'north' },
+    ]
+  },
+  price_result: {
+    msg: (area) => {
+      const data = {
+        city: '都心エリアの相場\n\n新宿区：平均¥40,788/月\n渋谷区：平均¥44,184/月\n港区：平均¥47,063/月\n\n駅近ほど高くなります。\n少し離れると¥10,000〜20,000安くなることも！',
+        south: '城南エリアの相場\n\n品川区：平均¥33,620/月\n目黒区：平均¥40,016/月\n世田谷区：平均¥30,751/月\n\n都心より比較的手頃です😊',
+        east: '城東エリアの相場\n\n墨田区：平均¥33,638/月\n江東区：平均¥31,786/月\n足立区：平均¥17,448/月\n\n足立・葛飾は都内最安水準です！',
+        north: '城北エリアの相場\n\n板橋区：平均¥27,992/月\n練馬区：平均¥21,424/月\n北区：平均¥29,276/月\n\nコスパが良いエリアです🎉',
+      };
+      return data[area] || '相場情報を確認中です…';
+    },
+    buttons: [
+      { label: '🔍 このエリアで探す', next: 'quick_search' },
+      { label: '他のエリアを見る', next: 'price_check' },
+    ]
+  },
+  contract_info: {
+    msg: '契約について、どんなことが気になりますか？',
+    buttons: [
+      { label: '💴 敷金はいくら？', next: 'faq_deposit' },
+      { label: '📋 必要な書類は？', next: 'faq_docs' },
+      { label: '🚪 解約はいつでもできる？', next: 'faq_cancel' },
+      { label: '🔍 審査ってある？', next: 'faq_screening' },
+    ]
+  },
+  faq_deposit: {
+    msg: '敷金は月額の1〜3ヶ月分が一般的です💴\n\n例えば月額3万円なら、敷金は3万〜9万円。退去時に傷や汚れがなければ返ってきます。\n\nあらかじめ初期費用として用意しておきましょう！',
+    buttons: [
+      { label: '他の質問を見る', next: 'contract_info' },
+      { label: '🔍 物件を探してみる', next: 'quick_search' },
+    ]
+  },
+  faq_docs: {
+    msg: '月極駐車場の契約に必要な書類📋\n\n✅ 運転免許証（本人確認）\n✅ 車検証（車のサイズ確認）\n✅ 印鑑（認印でOKな場合が多い）\n\nParkLinkなら免許証の写真アップロードでオンライン完結できます😊',
+    buttons: [
+      { label: '他の質問を見る', next: 'contract_info' },
+      { label: '🔍 物件を探してみる', next: 'quick_search' },
+    ]
+  },
+  faq_cancel: {
+    msg: '解約は基本的に1〜2ヶ月前に通知すればOKです🚪\n\n例えば「来月末で解約したい」場合は、今月中に申し出る必要があります。\n\n契約書に書いてある解約通知期間を必ず確認しましょう！',
+    buttons: [
+      { label: '他の質問を見る', next: 'contract_info' },
+      { label: '🔍 物件を探してみる', next: 'quick_search' },
+    ]
+  },
+  faq_screening: {
+    msg: '審査はあります！といっても難しくないので安心を😊\n\n確認されること\n✅ 本人確認（免許証など）\n✅ 車のサイズ（車検証で確認）\n✅ 支払い能力（口座確認など）\n\n通常1〜3日で結果が出ます。',
+    buttons: [
+      { label: '他の質問を見る', next: 'contract_info' },
+      { label: '🔍 物件を探してみる', next: 'quick_search' },
+    ]
+  },
+  quick_search: {
+    msg: 'どのエリアで探しますか？\nキーワードで教えてください😊',
+    input: true,
+    inputPlaceholder: '例：新宿、渋谷駅近く、港区…',
+    nextKey: 'do_search_from_input'
+  },
+};
+
+// ボットの状態管理
+let botState = { step: 'start', area: '', budget: 0, carType: '', answers: {} };
 
 function initChat() {
   state.chatMessages = [];
-  addChatMsg('ai', 'こんにちは！ParkLink AIです 🅿\n\nご希望の条件を日本語で教えていただければ、最適な月極駐車場をご提案します。\n\n例）「新宿で3万以下の空きあり」「ワンボックスが入る屋根付き」', [], CHAT_SUGGS.slice(0,4));
+  botState = { step: 'start', area: '', budget: 0, carType: '', answers: {} };
+  renderBotStep('start');
 }
+
+function renderBotStep(stepKey, prevInput) {
+  const scenario = AI_SCENARIOS[stepKey];
+  if (!scenario) return;
+
+  botState.step = stepKey;
+
+  // メッセージ生成
+  let msg = typeof scenario.msg === 'function' ? scenario.msg(prevInput || '') : scenario.msg;
+
+  // ボタンHTML
+  let buttons = [];
+  if (scenario.buttons) {
+    buttons = scenario.buttons.map(b => b.label);
+  }
+
+  // 入力フォームがある場合
+  if (scenario.input) {
+    addChatMsg('ai', msg, [], buttons);
+    // 入力プレースホルダーを更新
+    const input = document.getElementById('chat_input');
+    if (input) input.placeholder = scenario.inputPlaceholder || '入力してください…';
+    botState._inputMode = stepKey;
+  } else {
+    addChatMsg('ai', msg, [], buttons);
+    botState._inputMode = null;
+    const input = document.getElementById('chat_input');
+    if (input) input.placeholder = '気になることを入力…';
+  }
+}
+
+function sendChatText(text) {
+  addChatMsg('user', text, [], []);
+  state.chatTyping = true;
+  renderChat();
+
+  setTimeout(() => {
+    state.chatTyping = false;
+
+    // シナリオボット処理
+    const step = botState.step;
+    const scenario = AI_SCENARIOS[step];
+
+    // ボタン選択の場合
+    if (scenario?.buttons) {
+      const matched = scenario.buttons.find(b => b.label === text || b.label.includes(text));
+      if (matched) {
+        if (matched.value !== undefined) {
+          // 値を保存
+          if (step === 'first_search_area') botState.budget = matched.value;
+          if (step === 'first_search_car') botState.carType = matched.value;
+          if (step === 'price_check') botState._priceArea = matched.value;
+        }
+
+        if (matched.next === 'do_search') {
+          // 検索実行
+          executeSearch();
+        } else if (matched.next === 'price_result') {
+          renderBotStep('price_result', botState._priceArea);
+        } else {
+          renderBotStep(matched.next, text);
+        }
+        return;
+      }
+    }
+
+    // テキスト入力モード
+    if (botState._inputMode === 'first_search') {
+      botState.area = text;
+      renderBotStep('first_search_area', text);
+      return;
+    }
+    if (botState._inputMode === 'quick_search') {
+      botState.area = text;
+      executeSearch();
+      return;
+    }
+
+    // フリー入力（キーワード検索にフォールバック）
+    if (text === 'はじめから') {
+      botState = { step: 'start', area: '', budget: 0, carType: '', answers: {} };
+      renderBotStep('start');
+      return;
+    }
+    if (text === '条件を変える') {
+      botState = { step: 'start', area: '', budget: 0, carType: '', answers: {} };
+      renderBotStep('quick_search');
+      return;
+    }
+    const { text: replyText, props } = chatSearch(text);
+    addChatMsg('ai', replyText, props, ['はじめから', '相場を知りたい', '契約について']);
+    const tokens = tokenize(text);
+    if (tokens.length > 0) {
+      state.query = tokens.slice(0,2).join(' ');
+      state.limit = 50;
+      state.aiRanking = null;
+      document.getElementById('q').value = state.query;
+      renderList();
+      updateAdvice();
+    }
+  }, 600);
+}
+
+function executeSearch() {
+  const area = botState.area;
+  const budget = botState.budget;
+  const carType = botState.carType;
+
+  // 検索実行
+  const tokens = tokenize(area);
+  let results = state.properties.filter(p => {
+    const target = p.address + p.ward + p.station;
+    const matchArea = tokens.some(t => target.includes(t));
+    const matchBudget = budget === 0 || p.price === 0 || p.price <= budget;
+    const matchCar = !carType || !p.size || p.size === carType;
+    return p.available && matchArea && matchBudget && matchCar;
+  }).slice(0, 5);
+
+  if (results.length === 0) {
+    results = state.properties.filter(p => p.available).slice(0, 5);
+  }
+
+  const budgetText = budget > 0 ? `¥${budget.toLocaleString()}以下・` : '';
+  const carText = carType ? `${carType}対応・` : '';
+  const msg = `${area}で${budgetText}${carText}空きあり物件が${results.length}件見つかりました！\n\n気になる物件をタップして詳細を確認してください😊`;
+
+  addChatMsg('ai', msg, results, ['もっと探す', 'はじめから', '条件を変える']);
+
+  // メイン画面にも反映
+  state.query = area;
+  state.limit = 50;
+  document.getElementById('q').value = area;
+  renderList();
+  updateAdvice();
+
+  // ボットをリセット
+  botState = { step: 'start', area: '', budget: 0, carType: '', answers: {} };
+}
+
+function sendChat() {
+  const input = document.getElementById('chat_input');
+  const text = input.value.trim();
+  if (!text || state.chatTyping) return;
+  input.value = '';
+  sendChatText(text);
+}
+
+
 
 function toggleChat() {
   state.chatOpen = !state.chatOpen;
@@ -2889,35 +3591,6 @@ function renderChat() {
     msgs.innerHTML += '<div class="typing-wrap"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
   }
   msgs.scrollTop = msgs.scrollHeight;
-}
-
-function sendChat() {
-  const input = document.getElementById('chat_input');
-  const text = input.value.trim();
-  if (!text || state.chatTyping) return;
-  input.value = '';
-  sendChatText(text);
-}
-
-function sendChatText(text) {
-  addChatMsg('user', text, [], []);
-  state.chatTyping = true;
-  renderChat();
-  setTimeout(() => {
-    const {text: replyText, props} = chatSearch(text);
-    state.chatTyping = false;
-    addChatMsg('ai', replyText, props, []);
-    // チャットの検索条件をメイン画面に反映
-    const tokens = tokenize(text);
-    if (tokens.length > 0) {
-      state.query = tokens.slice(0,2).join(' ');
-      state.limit = 50;
-      state.aiRanking = null;
-      document.getElementById('q').value = state.query;
-      renderList();
-      updateAdvice();
-    }
-  }, 700);
 }
 
 function chatSearch(text) {
